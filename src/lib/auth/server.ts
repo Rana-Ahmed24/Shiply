@@ -1,0 +1,87 @@
+import "server-only";
+
+import type { User } from "@supabase/supabase-js";
+import { redirect } from "next/navigation";
+
+import {
+  AUTH_ROUTE_PREFIXES,
+  DEFAULT_LOGIN_PATH,
+  PROTECTED_ROUTE_PREFIXES,
+} from "@/lib/auth/config";
+import type { AuthSession, Profile } from "@/lib/auth/session";
+import { createClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
+
+export async function getUser(): Promise<User | null> {
+  if (!hasSupabaseEnv()) return null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error("[auth] getUser failed:", error.message);
+    return null;
+  }
+
+  return user;
+}
+
+export async function getProfile(userId: string): Promise<Profile | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[auth] getProfile failed:", error.message);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getSession(): Promise<AuthSession | null> {
+  const user = await getUser();
+  if (!user) return null;
+
+  const profile = await getProfile(user.id);
+  return { user, profile };
+}
+
+export async function requireUser(redirectTo = DEFAULT_LOGIN_PATH): Promise<User> {
+  const user = await getUser();
+  if (!user) {
+    redirect(redirectTo);
+  }
+  return user;
+}
+
+export async function requireSession(
+  redirectTo = DEFAULT_LOGIN_PATH
+): Promise<AuthSession> {
+  const session = await getSession();
+  if (!session) {
+    redirect(redirectTo);
+  }
+  return session;
+}
+
+export function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_ROUTE_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
+}
+
+export function isAuthPath(pathname: string): boolean {
+  return AUTH_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+export async function signOut(): Promise<void> {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+}

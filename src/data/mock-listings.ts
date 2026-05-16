@@ -1,0 +1,37 @@
+import type { TravelerListing } from "@/types/listing";
+
+export const LIVE_LISTINGS: TravelerListing[] = [
+  {
+    id: "1",
+    origin: { city: "New York", country: "USA", flag: "🇺🇸" },
+    destination: { city: "Cairo", country: "Egypt", flag: "🇪🇬" },
+    arrives: "May 25",
+    capacity: "2 kg free",
+    service: "Shop & Ship",
+    rating: 4.9,
+    verified: true,
+    categories: ["Phones", "Electronics", "Clothes"],
+  },
+  {
+    id: "2",
+    origin: { city: "London", country: "UK", flag: "🇬🇧" },
+    destination: { city: "Alexandria", country: "Egypt", flag: "🇪🇬" },
+    arrives: "Jun 2",
+    capacity: "5 kg free",
+    service: "Ship Only",
+    rating: 4.8,
+    verified: true,
+    categories: ["Cosmetics", "Supplements"],
+  },
+  {
+    id: "3",
+    origin: { city: "Dubai", country: "UAE", flag: "🇦🇪" },
+    destination: { city: "Cairo", country: "Egypt", flag: "🇪🇬" },
+    arrives: "May 30",
+    capacity: "3 kg free",
+    service: "Both",
+    rating: 5.0,
+    verified: true,
+    categories: ["Laptops", "Accessories"],
+  },
+];
