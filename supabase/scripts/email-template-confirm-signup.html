@@ -1,0 +1,16 @@
+<!--
+  Paste into Supabase Dashboard → Authentication → Email Templates → Confirm signup
+
+  Requires:
+  - Site URL = your public app URL (not localhost if users sign up remotely)
+  - Redirect URLs include: https://YOUR_DOMAIN/auth/confirm
+-->
+<h2>Confirm your HitchHiker account</h2>
+<p>Click the link below to verify your email and continue setup:</p>
+<p>
+  <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=signup">
+    Confirm my email
+  </a>
+</p>
+<p>If the button does not work, copy this URL into your browser:</p>
+<p>{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=signup</p>

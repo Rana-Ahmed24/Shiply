@@ -23,16 +23,17 @@ import {
   signupSchema,
 } from "@/lib/auth/schemas";
 import { signOut } from "@/lib/auth/server";
-import { getSiteUrl } from "@/lib/supabase/env";
+import {
+  authCallbackUrl,
+  authConfirmUrl,
+  getAuthBaseUrl,
+  isLocalDevUrl,
+} from "@/lib/auth/urls";
 import { createClient } from "@/lib/supabase/server";
 
 function getRedirectTo(formData: FormData): string | undefined {
   const value = formData.get("redirectTo");
   return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
-function authCallbackUrl(next: string) {
-  return `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(next)}`;
 }
 
 export async function loginAction(
@@ -91,12 +92,20 @@ export async function signupAction(
         full_name: parsed.data.fullName,
         onboarding_completed: false,
       },
-      emailRedirectTo: authCallbackUrl(ONBOARDING_PATH),
+      emailRedirectTo: await authConfirmUrl(ONBOARDING_PATH),
     },
   });
 
   if (error) {
     return { error: mapAuthError(error.message) };
+  }
+
+  const baseUrl = await getAuthBaseUrl();
+  if (isLocalDevUrl(baseUrl)) {
+    return {
+      success:
+        "Account created. Verification emails use localhost and only work on this computer. Deploy the app (or use ngrok), set NEXT_PUBLIC_SITE_URL to that URL, update Supabase Auth URLs, then sign up again—or confirm the user manually in Supabase.",
+    };
   }
 
   return {
@@ -119,7 +128,7 @@ export async function forgotPasswordAction(
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: authCallbackUrl("/reset-password"),
+    redirectTo: await authConfirmUrl("/reset-password"),
   });
 
   if (error) {
@@ -163,7 +172,7 @@ export async function signInWithGoogleAction(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: authCallbackUrl(redirectTo),
+      redirectTo: await authCallbackUrl(redirectTo),
       queryParams: {
         access_type: "offline",
         prompt: "consent",

@@ -1,3 +1,14 @@
+/** Expected when no one is signed in (e.g. after logout). Not a server fault. */
+export function isBenignAuthError(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("auth session missing") ||
+    normalized.includes("jwt expired") ||
+    normalized.includes("invalid refresh token") ||
+    normalized.includes("refresh token not found")
+  );
+}
+
 export type AuthActionState = {
   error?: string;
   success?: string;
@@ -23,6 +34,23 @@ export function mapAuthError(message: string): string {
   }
 
   return message;
+}
+
+export function mapAuthCallbackError(errorParam: string): string {
+  const decoded = decodeURIComponent(errorParam);
+  const normalized = decoded.toLowerCase();
+
+  if (
+    normalized.includes("auth_callback_failed") ||
+    normalized.includes("auth_confirm_failed")
+  ) {
+    return "This sign-in or verification link is invalid or expired. Request a new email or try signing in again.";
+  }
+  if (normalized.includes("pkce") || normalized.includes("code verifier")) {
+    return "Open the verification link in the same browser you used to sign up, or ask for a new confirmation email.";
+  }
+
+  return mapAuthError(decoded);
 }
 
 export function fieldErrorsFromZod(

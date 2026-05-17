@@ -7,6 +7,7 @@ import { signOutAction } from "@/lib/auth/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -46,25 +47,29 @@ export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/dashboard" />}>
-          <LayoutDashboard className="size-4" />
-          Dashboard
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={`/profile/${userId}`} />}>
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/settings" />}>
-          <Settings className="size-4" />
-          Settings
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem render={<Link href="/dashboard" />}>
+            <LayoutDashboard className="size-4" />
+            Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href={`/profile/${userId}`} />}>
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href="/settings" />}>
+            <Settings className="size-4" />
+            Settings
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={() => signOutAction()}
-        >
-          <LogOut className="size-4" />
-          Sign out
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => signOutAction()}
+          >
+            <LogOut className="size-4" />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

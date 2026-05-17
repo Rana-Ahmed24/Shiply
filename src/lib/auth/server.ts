@@ -8,6 +8,7 @@ import {
   DEFAULT_LOGIN_PATH,
   PROTECTED_ROUTE_PREFIXES,
 } from "@/lib/auth/config";
+import { isBenignAuthError } from "@/lib/auth/errors";
 import type { AuthSession, Profile } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -22,7 +23,9 @@ export async function getUser(): Promise<User | null> {
   } = await supabase.auth.getUser();
 
   if (error) {
-    console.error("[auth] getUser failed:", error.message);
+    if (!isBenignAuthError(error.message)) {
+      console.error("[auth] getUser failed:", error.message);
+    }
     return null;
   }
 

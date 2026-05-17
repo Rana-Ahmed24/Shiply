@@ -56,7 +56,8 @@ export async function updateSession(request: NextRequest) {
     const isProtected = matchesPrefix(pathname, PROTECTED_ROUTE_PREFIXES);
     const isAuthRoute =
       matchesPrefix(pathname, AUTH_ROUTE_PREFIXES) &&
-      !pathname.startsWith("/auth/callback");
+      !pathname.startsWith("/auth/callback") &&
+      !pathname.startsWith("/auth/confirm");
     const isOnboarding = pathname.startsWith(ONBOARDING_PATH);
     const onboardingComplete = isOnboardingComplete(user);
 

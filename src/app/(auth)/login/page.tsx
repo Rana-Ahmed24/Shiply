@@ -4,6 +4,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { DEFAULT_AUTH_REDIRECT } from "@/lib/auth/config";
+import { mapAuthCallbackError } from "@/lib/auth/errors";
 import { getSession } from "@/lib/auth/server";
 
 type LoginPageProps = {
@@ -28,7 +29,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       description="Access your trips, requests, and secure deliveries."
     >
       {params.error && (
-        <AuthAlert>Authentication failed. Please try again.</AuthAlert>
+        <AuthAlert>{mapAuthCallbackError(params.error)}</AuthAlert>
+      )}
+      {params.message === "email_confirmed" && (
+        <AuthAlert variant="success">
+          Email confirmed. You can sign in now.
+        </AuthAlert>
       )}
       {params.message === "password_updated" && (
         <AuthAlert variant="success">
