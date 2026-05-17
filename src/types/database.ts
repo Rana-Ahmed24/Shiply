@@ -31,6 +31,7 @@ export type Database = {
           traveler_review_count: number;
           customer_rating_avg: number | null;
           customer_review_count: number;
+          onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -51,6 +52,7 @@ export type Database = {
           traveler_review_count?: number;
           customer_rating_avg?: number | null;
           customer_review_count?: number;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -71,6 +73,7 @@ export type Database = {
           traveler_review_count?: number;
           customer_rating_avg?: number | null;
           customer_review_count?: number;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };

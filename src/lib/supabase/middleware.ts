@@ -5,12 +5,19 @@ import {
   AUTH_ROUTE_PREFIXES,
   DEFAULT_AUTH_REDIRECT,
   DEFAULT_LOGIN_PATH,
+  ONBOARDING_PATH,
   PROTECTED_ROUTE_PREFIXES,
 } from "@/lib/auth/config";
 import { getPublicSupabaseEnv, hasSupabaseEnv } from "@/lib/supabase/env";
 
 function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some((prefix) => pathname.startsWith(prefix));
+}
+
+function isOnboardingComplete(
+  user: { user_metadata?: Record<string, unknown> } | null
+) {
+  return user?.user_metadata?.onboarding_completed === true;
 }
 
 export async function updateSession(request: NextRequest) {
@@ -42,7 +49,6 @@ export async function updateSession(request: NextRequest) {
       },
     });
 
-    // Refresh session — must run immediately after client creation
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -51,6 +57,25 @@ export async function updateSession(request: NextRequest) {
     const isAuthRoute =
       matchesPrefix(pathname, AUTH_ROUTE_PREFIXES) &&
       !pathname.startsWith("/auth/callback");
+    const isOnboarding = pathname.startsWith(ONBOARDING_PATH);
+    const onboardingComplete = isOnboardingComplete(user);
+
+    if (isOnboarding && !user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = DEFAULT_LOGIN_PATH;
+      redirectUrl.searchParams.set("redirectTo", ONBOARDING_PATH);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (user && !onboardingComplete) {
+      if (!isOnboarding && !pathname.startsWith("/auth")) {
+        return NextResponse.redirect(new URL(ONBOARDING_PATH, request.url));
+      }
+    }
+
+    if (user && onboardingComplete && isOnboarding) {
+      return NextResponse.redirect(new URL(DEFAULT_AUTH_REDIRECT, request.url));
+    }
 
     if (isProtected && !user) {
       const redirectUrl = request.nextUrl.clone();
@@ -60,8 +85,10 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (isAuthRoute && user) {
-      const redirectTo =
-        request.nextUrl.searchParams.get("redirectTo") ?? DEFAULT_AUTH_REDIRECT;
+      const redirectTo = onboardingComplete
+        ? (request.nextUrl.searchParams.get("redirectTo") ??
+          DEFAULT_AUTH_REDIRECT)
+        : ONBOARDING_PATH;
       return NextResponse.redirect(new URL(redirectTo, request.url));
     }
 
