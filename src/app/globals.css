@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-heading);
   --color-brand-navy: var(--brand-navy);
   --color-brand-gold: var(--brand-gold);
   --color-brand-teal: var(--brand-teal);
@@ -93,6 +93,7 @@
   --sidebar-ring: oklch(0.72 0.14 185);
   --space-section: 5rem;
   --space-container-x: 1rem;
+  --white: #fff;
 }
 
 .dark {
@@ -137,9 +138,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
   }
+
   html {
     @apply font-sans scroll-smooth;
   }
@@ -147,17 +150,27 @@
 
 @layer utilities {
   .text-display {
-    @apply text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl md:text-5xl lg:text-[3.25rem];
+    font-family: 'Syne', sans-serif;
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 1.25rem;
+    letter-spacing: -1px;
   }
+
   .text-lead {
     @apply text-base leading-relaxed text-muted-foreground sm:text-lg;
   }
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
+
   .shadow-soft-lg {
     box-shadow: var(--shadow-soft-lg);
   }
+
   .section-y {
     padding-block: var(--space-section);
   }

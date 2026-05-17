@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { MainLayout } from "@/components/layout/main-layout";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SITE } from "@/lib/constants";
-import { fontMono, fontSans } from "@/lib/fonts";
+import { fontSans, fontSyne } from "@/lib/fonts";
 
 import "./globals.css";
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
+        className={`${fontSans.variable} ${fontSyne.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           <MainLayout>{children}</MainLayout>

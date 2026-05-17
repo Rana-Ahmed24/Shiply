@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { TravelerListing } from "@/types/listing";
 import { cn } from "@/lib/utils";
+import { fontSyne } from "@/lib/fonts";
 
 type TravelerListingCardProps = {
   listing: TravelerListing;
@@ -21,10 +22,18 @@ export function TravelerListingCard({
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium">
           <span className="mr-1">{listing.origin.flag}</span>
-          {listing.origin.city}
+
+          <span className={fontSyne.className}>
+            {listing.origin.city}
+          </span>
+
           <span className="mx-2 text-muted-foreground">→</span>
+
           <span className="mr-1">{listing.destination.flag}</span>
-          {listing.destination.city}
+
+          <span className={fontSyne.className}>
+            {listing.destination.city}
+          </span>
         </p>
         <Badge className="shrink-0 rounded-full border-0 bg-brand-gold/15 px-2.5 text-brand-gold">
           {listing.rating} ★

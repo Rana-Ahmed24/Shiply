@@ -16,7 +16,7 @@ const STATS = [
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden py-12 md:py-20">
+    <section className="relative overflow-hidden py-24 md:py-40">
       <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,var(--brand-teal)_0%,transparent_50%)] opacity-[0.07]"
         aria-hidden
@@ -50,7 +50,7 @@ export function HeroSection() {
                 href="/requests"
                 className={cn(
                   buttonVariants({ size: "lg" }),
-                  "rounded-2xl bg-brand-gold px-8 text-brand-navy hover:bg-brand-gold/90"
+                  "rounded-2xl bg-brand-gold px-10 py-8 text-brand-navy hover:bg-brand-gold/90"
                 )}
               >
                 I need something
@@ -59,7 +59,7 @@ export function HeroSection() {
                 href="/travelers"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
-                  "rounded-2xl border-border/80 px-8"
+                  "rounded-2xl border-border/80 px-15 py-8"
                 )}
               >
                 I&apos;m traveling
