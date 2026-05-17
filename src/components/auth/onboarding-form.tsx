@@ -4,6 +4,8 @@ import { Package, Plane } from "lucide-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { useActionRedirect } from "@/hooks/use-action-redirect";
+
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { FieldError } from "@/components/auth/field-error";
 import { completeOnboardingAction } from "@/lib/auth/actions";
@@ -59,6 +61,7 @@ type OnboardingFormProps = {
 
 export function OnboardingForm({ defaultFullName }: OnboardingFormProps) {
   const [state, formAction] = useActionState(completeOnboardingAction, {});
+  useActionRedirect(state.redirectTo);
 
   return (
     <Card className="rounded-2xl border-border/60 shadow-soft">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { useActionRedirect } from "@/hooks/use-action-redirect";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { FieldError } from "@/components/auth/field-error";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
@@ -40,6 +41,7 @@ function SubmitButton() {
 
 export function LoginForm({ redirectTo }: LoginFormProps) {
   const [state, formAction] = useActionState(loginAction, {});
+  useActionRedirect(state.redirectTo);
 
   return (
     <Card className="rounded-2xl border-border/60 shadow-soft">

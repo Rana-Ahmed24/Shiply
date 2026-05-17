@@ -57,6 +57,7 @@ export async function SiteHeader() {
 
   const loggedIn = session ? (
     <UserNav
+      userId={session.user.id}
       email={session.user.email ?? ""}
       fullName={session.profile?.full_name}
       roles={session.profile?.roles}

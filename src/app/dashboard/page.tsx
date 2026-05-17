@@ -34,7 +34,19 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Link
+          href={`/profile/${user.id}`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "lg" }),
+            "h-auto flex-col items-start gap-2 rounded-2xl p-6"
+          )}
+        >
+          <span className="font-semibold">My profile</span>
+          <span className="text-sm font-normal text-muted-foreground">
+            View stats, reviews & verifications
+          </span>
+        </Link>
         {hasRole(roles, "customer") && (
           <Link
             href="/requests/new"

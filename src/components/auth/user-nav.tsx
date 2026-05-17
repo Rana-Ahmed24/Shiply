@@ -15,12 +15,13 @@ import {
 import { cn } from "@/lib/utils";
 
 type UserNavProps = {
+  userId: string;
   email: string;
   fullName?: string | null;
   roles?: string[];
 };
 
-export function UserNav({ email, fullName, roles }: UserNavProps) {
+export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
   const initials = (fullName ?? email).slice(0, 2).toUpperCase();
 
   return (
@@ -48,6 +49,9 @@ export function UserNav({ email, fullName, roles }: UserNavProps) {
         <DropdownMenuItem render={<Link href="/dashboard" />}>
           <LayoutDashboard className="size-4" />
           Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={`/profile/${userId}`} />}>
+          Profile
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings" />}>
           <Settings className="size-4" />

@@ -13,6 +13,7 @@ import {
   mapAuthError,
 } from "@/lib/auth/errors";
 import { ensureProfile, resolvePostAuthPath } from "@/lib/auth/profile";
+import { updateProfileOnboarding } from "@/lib/auth/profile-update";
 import type { OnboardingRole } from "@/lib/auth/roles";
 import {
   forgotPasswordSchema,
@@ -64,7 +65,7 @@ export async function loginAction(
 
   const profile = await ensureProfile(supabase, user);
   const redirectTo = getRedirectTo(formData);
-  redirect(resolvePostAuthPath(user, profile, redirectTo));
+  return { redirectTo: resolvePostAuthPath(user, profile, redirectTo) };
 }
 
 export async function signupAction(
@@ -152,7 +153,7 @@ export async function resetPasswordAction(
     return { error: mapAuthError(error.message) };
   }
 
-  redirect("/login?message=password_updated");
+  return { redirectTo: "/login?message=password_updated" };
 }
 
 export async function signInWithGoogleAction(formData: FormData) {
@@ -205,19 +206,7 @@ export async function completeOnboardingAction(
     redirect(DEFAULT_LOGIN_PATH);
   }
 
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      full_name: parsed.data.fullName,
-      roles: parsed.data.roles,
-      onboarding_completed: true,
-    })
-    .eq("id", user.id);
-
-  if (profileError) {
-    return { error: mapAuthError(profileError.message) };
-  }
-
+  // Metadata first so middleware can proceed even if profiles column is missing
   const { error: metaError } = await supabase.auth.updateUser({
     data: {
       full_name: parsed.data.fullName,
@@ -229,8 +218,22 @@ export async function completeOnboardingAction(
     return { error: mapAuthError(metaError.message) };
   }
 
+  const { error: profileError } = await updateProfileOnboarding(
+    supabase,
+    user.id,
+    {
+      full_name: parsed.data.fullName,
+      roles: parsed.data.roles,
+      onboarding_completed: true,
+    }
+  );
+
+  if (profileError) {
+    return { error: mapAuthError(profileError.message) };
+  }
+
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  return { redirectTo: "/dashboard" };
 }
 
 export async function signOutAction() {

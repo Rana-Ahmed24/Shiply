@@ -8,6 +8,7 @@ import {
   ONBOARDING_PATH,
 } from "@/lib/auth/config";
 import type { Profile } from "@/lib/auth/session";
+import { upsertProfileForUser } from "@/lib/auth/profile-update";
 import type { Database } from "@/types/database";
 
 type Supabase = SupabaseClient<Database>;
@@ -30,18 +31,14 @@ export async function ensureProfile(
     (user.user_metadata?.name as string | undefined) ??
     null;
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert({
-      id: user.id,
-      email,
-      full_name: fullName,
-      avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
-      roles: ["customer"],
-      onboarding_completed: false,
-    })
-    .select()
-    .single();
+  const { data, error } = await upsertProfileForUser(supabase, {
+    id: user.id,
+    email,
+    full_name: fullName,
+    avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+    roles: ["customer"],
+    onboarding_completed: false,
+  });
 
   if (error) {
     console.error("[auth] ensureProfile failed:", error.message);

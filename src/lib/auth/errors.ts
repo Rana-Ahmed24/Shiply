@@ -2,6 +2,8 @@ export type AuthActionState = {
   error?: string;
   success?: string;
   fieldErrors?: Record<string, string[]>;
+  /** Client navigates here — avoids redirect() + useActionState runtime errors */
+  redirectTo?: string;
 };
 
 export function mapAuthError(message: string): string {

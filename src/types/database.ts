@@ -32,6 +32,10 @@ export type Database = {
           customer_rating_avg: number | null;
           customer_review_count: number;
           onboarding_completed: boolean;
+          languages: string[];
+          meetup_locations: string[];
+          deals_completed: number;
+          traveler_tier: "bronze" | "silver" | "gold";
           created_at: string;
           updated_at: string;
         };
@@ -53,6 +57,10 @@ export type Database = {
           customer_rating_avg?: number | null;
           customer_review_count?: number;
           onboarding_completed?: boolean;
+          languages?: string[];
+          meetup_locations?: string[];
+          deals_completed?: number;
+          traveler_tier?: "bronze" | "silver" | "gold";
           created_at?: string;
           updated_at?: string;
         };
@@ -74,9 +82,38 @@ export type Database = {
           customer_rating_avg?: number | null;
           customer_review_count?: number;
           onboarding_completed?: boolean;
+          languages?: string[];
+          meetup_locations?: string[];
+          deals_completed?: number;
+          traveler_tier?: "bronze" | "silver" | "gold";
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+      verifications: {
+        Row: {
+          type: string;
+          status: string;
+          user_id: string;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      reviews: {
+        Row: {
+          id: string;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+          reviewer_id: string;
+          reviewee_id: string;
+          is_public: boolean;
+          removed_at: string | null;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
         Relationships: [];
       };
     };

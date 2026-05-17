@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { useActionRedirect } from "@/hooks/use-action-redirect";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { FieldError } from "@/components/auth/field-error";
 import { resetPasswordAction } from "@/lib/auth/actions";
@@ -32,6 +33,7 @@ function SubmitButton() {
 
 export function ResetPasswordForm() {
   const [state, formAction] = useActionState(resetPasswordAction, {});
+  useActionRedirect(state.redirectTo);
 
   return (
     <Card className="rounded-2xl border-border/60 shadow-soft">
