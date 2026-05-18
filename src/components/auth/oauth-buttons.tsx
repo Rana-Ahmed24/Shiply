@@ -3,6 +3,7 @@
 import { useFormStatus } from "react-dom";
 
 import { signInWithGoogleAction } from "@/lib/auth/actions";
+import { SITE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 type OAuthButtonsProps = {
   redirectTo?: string;
@@ -26,12 +27,19 @@ function GoogleSubmitButton() {
 
 export function OAuthButtons({ redirectTo }: OAuthButtonsProps) {
   return (
-    <form action={signInWithGoogleAction}>
-      {redirectTo && (
-        <input type="hidden" name="redirectTo" value={redirectTo} />
-      )}
-      <GoogleSubmitButton />
-    </form>
+    <div className="space-y-2">
+      <form action={signInWithGoogleAction}>
+        {redirectTo && (
+          <input type="hidden" name="redirectTo" value={redirectTo} />
+        )}
+        <GoogleSubmitButton />
+      </form>
+      <p className="text-center text-xs text-muted-foreground">
+        Google may show a <span className="font-medium">supabase.co</span>{" "}
+        address — that is {SITE.fullName}&apos;s secure sign-in provider, not a
+        different app.
+      </p>
+    </div>
   );
 }
 
