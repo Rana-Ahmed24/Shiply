@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { LiveListings } from "@/components/marketing/live-listings";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +13,11 @@ const STATS = [
   { value: "0%", label: "Unresolved disputes" },
 ] as const;
 
-export function HeroSection() {
+type HeroSectionProps = {
+  listings: React.ReactNode;
+};
+
+export function HeroSection({ listings }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden py-24 md:py-40">
       <div
@@ -56,7 +59,7 @@ export function HeroSection() {
                 I need something
               </Link>
               <Link
-                href="/travelers"
+                href="/listings/new"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
                   "rounded-2xl border-border/80 px-15 py-8"
@@ -87,7 +90,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="lg:pt-4"
           >
-            <LiveListings />
+            {listings}
           </motion.div>
         </div>
       </Container>

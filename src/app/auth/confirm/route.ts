@@ -1,11 +1,11 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-import { postAuthRedirectResponse } from "@/lib/auth/post-auth-redirect";
+import { ONBOARDING_PATH } from "@/lib/auth/config";
 import { ensureProfile, resolvePostAuthPath } from "@/lib/auth/profile";
-import { createClient } from "@/lib/supabase/server";
+import { createAuthRouteClient } from "@/lib/supabase/auth-route";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
@@ -15,7 +15,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=auth_confirm_failed`);
   }
 
-  const supabase = await createClient();
+  const { supabase, setRedirectPath, redirectResponse } = createAuthRouteClient(
+    request,
+    ONBOARDING_PATH
+  );
+
   const { error } = await supabase.auth.verifyOtp({ type, token_hash });
 
   if (error) {
@@ -33,20 +37,18 @@ export async function GET(request: Request) {
   }
 
   const profile = await ensureProfile(supabase, user);
-  const path = resolvePostAuthPath(user, profile, next);
 
   if (type === "recovery") {
     const recoveryPath =
       next?.startsWith("/") && !next.startsWith("//") ? next : "/reset-password";
-    return postAuthRedirectResponse(request, recoveryPath);
+    setRedirectPath(recoveryPath);
+    return redirectResponse();
   }
 
-  if (path === "/login") {
-    return postAuthRedirectResponse(
-      request,
-      "/login?message=email_confirmed"
-    );
-  }
+  const path = resolvePostAuthPath(user, profile, next);
+  const finalPath =
+    path === "/login" ? "/login?message=email_confirmed" : path;
+  setRedirectPath(finalPath);
 
-  return postAuthRedirectResponse(request, path);
+  return redirectResponse();
 }

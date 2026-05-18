@@ -19,13 +19,17 @@ import { NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 type SiteHeaderClientProps = {
+  logoHref?: string;
   desktopAuth: React.ReactNode;
   mobileAuth: React.ReactNode;
+  modeToggle?: React.ReactNode;
 };
 
 export function SiteHeaderClient({
+  logoHref = "/",
   desktopAuth,
   mobileAuth,
+  modeToggle,
 }: SiteHeaderClientProps) {
   const [open, setOpen] = useState(false);
 
@@ -33,7 +37,7 @@ export function SiteHeaderClient({
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <Container>
         <div className="flex h-16 items-center justify-between gap-4">
-          <Logo />
+          <Logo href={logoHref} />
 
           <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
             {NAV_LINKS.map((link) => (
@@ -48,8 +52,9 @@ export function SiteHeaderClient({
           </nav>
 
           <div className="flex items-center gap-2">
+            {modeToggle}
             <ThemeToggle />
-            <div className="hidden items-center gap-2 sm:flex">{desktopAuth}</div>
+            <div className="hidden sm:block">{desktopAuth}</div>
 
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger
@@ -64,7 +69,7 @@ export function SiteHeaderClient({
               <SheetContent side="right" className="w-full max-w-sm">
                 <SheetHeader>
                   <SheetTitle>
-                    <Logo />
+                    <Logo href={logoHref} linked={false} />
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-4" aria-label="Mobile">

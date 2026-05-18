@@ -13,16 +13,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAppMode } from "@/lib/mode/client-store";
+import type { AppMode } from "@/lib/mode/constants";
+import { MODE_SHORT } from "@/lib/mode/constants";
 import { cn } from "@/lib/utils";
 
 type UserNavProps = {
   userId: string;
   email: string;
   fullName?: string | null;
-  roles?: string[];
+  appMode: AppMode;
 };
 
-export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
+export function UserNav({ userId, email, fullName, appMode }: UserNavProps) {
+  const mode = useAppMode(appMode);
   const initials = (fullName ?? email).slice(0, 2).toUpperCase();
 
   return (
@@ -40,17 +44,15 @@ export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
         <DropdownMenuLabel className="font-normal">
           <p className="font-medium">{fullName ?? "Account"}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
-          {roles && roles.length > 0 && (
-            <p className="mt-1 text-xs capitalize text-brand-teal">
-              {roles.join(" · ")}
-            </p>
-          )}
+          <p className="mt-1 text-xs font-medium capitalize text-brand-teal">
+            {MODE_SHORT[mode]}
+          </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem render={<Link href="/dashboard" />}>
+          <DropdownMenuItem render={<Link href="/home" />}>
             <LayoutDashboard className="size-4" />
-            Dashboard
+            Home
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link href={`/profile/${userId}`} />}>
             Profile

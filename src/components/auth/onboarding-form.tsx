@@ -1,6 +1,7 @@
 "use client";
 
 import { Package, Plane } from "lucide-react";
+import { useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -9,7 +10,7 @@ import { useActionRedirect } from "@/hooks/use-action-redirect";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { FieldError } from "@/components/auth/field-error";
 import { completeOnboardingAction } from "@/lib/auth/actions";
-import type { OnboardingRole } from "@/lib/auth/roles";
+import type { AppMode } from "@/lib/mode/constants";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,22 +23,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-const ROLE_OPTIONS: {
-  value: OnboardingRole;
-  label: string;
+const MODE_OPTIONS: {
+  value: AppMode;
+  title: string;
   description: string;
   icon: typeof Package;
 }[] = [
   {
     value: "customer",
-    label: "I need items",
-    description: "Request products from abroad",
+    title: "Customer",
+    description: "I want to send packages or create delivery requests.",
     icon: Package,
   },
   {
     value: "traveler",
-    label: "I'm traveling",
-    description: "Earn by bringing items to Egypt",
+    title: "Traveler",
+    description: "I want to carry packages while traveling and earn money.",
     icon: Plane,
   },
 ];
@@ -50,7 +51,7 @@ function SubmitButton() {
       disabled={pending}
       className="h-11 w-full rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
     >
-      {pending ? "Saving…" : "Continue to dashboard"}
+      {pending ? "Saving…" : "Continue to Shiply"}
     </Button>
   );
 }
@@ -62,19 +63,56 @@ type OnboardingFormProps = {
 export function OnboardingForm({ defaultFullName }: OnboardingFormProps) {
   const [state, formAction] = useActionState(completeOnboardingAction, {});
   useActionRedirect(state.redirectTo);
+  const [preferredMode, setPreferredMode] = useState<AppMode>("customer");
 
   return (
     <Card className="rounded-2xl border-border/60 shadow-soft">
       <CardHeader>
-        <CardTitle className="text-lg">Complete your profile</CardTitle>
+        <CardTitle className="text-lg">How would you like to use Shiply?</CardTitle>
         <CardDescription>
-          Tell us how you&apos;ll use Shiply. You can do both later.
+          Pick your default view. You can always switch between Customer and
+          Traveler mode — one account does both.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {state.error && <AuthAlert>{state.error}</AuthAlert>}
 
         <form action={formAction} className="space-y-6">
+          <input type="hidden" name="preferredMode" value={preferredMode} />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {MODE_OPTIONS.map((option) => {
+              const selected = preferredMode === option.value;
+              const Icon = option.icon;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setPreferredMode(option.value)}
+                  className={cn(
+                    "flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-colors",
+                    selected
+                      ? "border-brand-gold bg-brand-gold/10"
+                      : "border-border/60 hover:border-brand-gold/40"
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "size-5",
+                      selected ? "text-brand-gold" : "text-brand-teal"
+                    )}
+                    aria-hidden
+                  />
+                  <span className="font-semibold">{option.title}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {option.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <FieldError messages={state.fieldErrors?.preferredMode} />
+
           <div className="space-y-2">
             <Label htmlFor="fullName">Full name</Label>
             <Input
@@ -88,35 +126,6 @@ export function OnboardingForm({ defaultFullName }: OnboardingFormProps) {
             />
             <FieldError messages={state.fieldErrors?.fullName} />
           </div>
-
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-medium">I want to</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {ROLE_OPTIONS.map((option) => (
-                <label
-                  key={option.value}
-                  className={cn(
-                    "flex cursor-pointer flex-col gap-2 rounded-2xl border border-border/60 p-4 transition-colors",
-                    "has-checked:border-brand-gold has-checked:bg-brand-gold/10",
-                    "hover:border-brand-gold/40"
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    name="roles"
-                    value={option.value}
-                    className="sr-only"
-                  />
-                  <option.icon className="size-5 text-brand-teal" aria-hidden />
-                  <span className="font-medium">{option.label}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {option.description}
-                  </span>
-                </label>
-              ))}
-            </div>
-            <FieldError messages={state.fieldErrors?.roles} />
-          </fieldset>
 
           <SubmitButton />
         </form>

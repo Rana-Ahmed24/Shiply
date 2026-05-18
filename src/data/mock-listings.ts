@@ -10,6 +10,8 @@ export const LIVE_LISTINGS: TravelerListing[] = [
     service: "Shop & Ship",
     rating: 4.9,
     verified: true,
+    travelerAvatarUrl: null,
+    reviewCount: 24,
     categories: ["Phones", "Electronics", "Clothes"],
   },
   {
@@ -21,6 +23,8 @@ export const LIVE_LISTINGS: TravelerListing[] = [
     service: "Ship Only",
     rating: 4.8,
     verified: true,
+    travelerAvatarUrl: null,
+    reviewCount: 18,
     categories: ["Cosmetics", "Supplements"],
   },
   {
@@ -32,6 +36,8 @@ export const LIVE_LISTINGS: TravelerListing[] = [
     service: "Both",
     rating: 5.0,
     verified: true,
+    travelerAvatarUrl: null,
+    reviewCount: 31,
     categories: ["Laptops", "Accessories"],
   },
 ];

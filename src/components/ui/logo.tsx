@@ -7,9 +7,11 @@ type LogoProps = {
   className?: string;
   /** Set false when Logo is placed inside another link */
   linked?: boolean;
+  /** Defaults to `/` (marketing). Use `/home` for signed-in app home. */
+  href?: string;
 };
 
-export function Logo({ className, linked = true }: LogoProps) {
+export function Logo({ className, linked = true, href = "/" }: LogoProps) {
   const content = (
     <>
       <span className="text-foreground">{SITE.name}</span>
@@ -27,7 +29,7 @@ export function Logo({ className, linked = true }: LogoProps) {
   }
 
   return (
-    <Link href="/" className={styles}>
+    <Link href={href} className={styles}>
       {content}
     </Link>
   );

@@ -31,7 +31,7 @@ export default async function SettingsPage() {
         <div>
           <h1 className="text-display text-3xl">Settings</h1>
           <p className="mt-1 text-muted-foreground">
-            Manage your HitchHiker profile
+            Manage your Shiply profile
           </p>
         </div>
         <Link

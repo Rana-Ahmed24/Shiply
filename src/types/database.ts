@@ -32,6 +32,7 @@ export type Database = {
           customer_rating_avg: number | null;
           customer_review_count: number;
           onboarding_completed: boolean;
+          preferred_mode: "customer" | "traveler";
           languages: string[];
           meetup_locations: string[];
           deals_completed: number;
@@ -57,6 +58,7 @@ export type Database = {
           customer_rating_avg?: number | null;
           customer_review_count?: number;
           onboarding_completed?: boolean;
+          preferred_mode?: "customer" | "traveler";
           languages?: string[];
           meetup_locations?: string[];
           deals_completed?: number;
@@ -82,6 +84,7 @@ export type Database = {
           customer_rating_avg?: number | null;
           customer_review_count?: number;
           onboarding_completed?: boolean;
+          preferred_mode?: "customer" | "traveler";
           languages?: string[];
           meetup_locations?: string[];
           deals_completed?: number;
@@ -114,6 +117,180 @@ export type Database = {
         };
         Insert: Record<string, never>;
         Update: Record<string, never>;
+        Relationships: [];
+      };
+      customer_requests: {
+        Row: {
+          id: string;
+          customer_id: string;
+          title: string;
+          description: string;
+          item_category: string;
+          estimated_weight_kg: number | null;
+          max_budget: number | null;
+          currency: string;
+          preferred_origin_country_code: string | null;
+          preferred_origin_city: string | null;
+          needed_by: string | null;
+          status:
+            | "draft"
+            | "open"
+            | "matched"
+            | "in_progress"
+            | "fulfilled"
+            | "cancelled"
+            | "expired";
+          product_link: string | null;
+          urgency: "flexible" | "normal" | "urgent";
+          image_urls: string[];
+          lifecycle_status:
+            | "pending"
+            | "accepted"
+            | "purchased"
+            | "shipped"
+            | "delivered"
+            | "cancelled";
+          published_at: string | null;
+          expires_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          title: string;
+          description: string;
+          item_category: string;
+          estimated_weight_kg?: number | null;
+          max_budget?: number | null;
+          currency?: string;
+          preferred_origin_country_code?: string | null;
+          preferred_origin_city?: string | null;
+          needed_by?: string | null;
+          status?:
+            | "draft"
+            | "open"
+            | "matched"
+            | "in_progress"
+            | "fulfilled"
+            | "cancelled"
+            | "expired";
+          product_link?: string | null;
+          urgency?: "flexible" | "normal" | "urgent";
+          image_urls?: string[];
+          lifecycle_status?:
+            | "pending"
+            | "accepted"
+            | "purchased"
+            | "shipped"
+            | "delivered"
+            | "cancelled";
+          published_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          customer_id?: string;
+          title?: string;
+          description?: string;
+          item_category?: string;
+          estimated_weight_kg?: number | null;
+          max_budget?: number | null;
+          currency?: string;
+          preferred_origin_country_code?: string | null;
+          preferred_origin_city?: string | null;
+          needed_by?: string | null;
+          status?:
+            | "draft"
+            | "open"
+            | "matched"
+            | "in_progress"
+            | "fulfilled"
+            | "cancelled"
+            | "expired";
+          product_link?: string | null;
+          urgency?: "flexible" | "normal" | "urgent";
+          image_urls?: string[];
+          lifecycle_status?:
+            | "pending"
+            | "accepted"
+            | "purchased"
+            | "shipped"
+            | "delivered"
+            | "cancelled";
+          published_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      traveler_listings: {
+        Row: {
+          id: string;
+          traveler_id: string;
+          origin_city: string;
+          origin_country_code: string;
+          destination_city: string;
+          destination_country_code: string;
+          departure_at: string | null;
+          arrival_at: string;
+          available_weight_kg: number;
+          service_type: "shop_and_ship" | "ship_only" | "both";
+          accepted_categories: string[];
+          notes: string | null;
+          delivery_preferences: string[];
+          status: "draft" | "active" | "paused" | "expired" | "cancelled";
+          published_at: string | null;
+          expires_at: string | null;
+          view_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          traveler_id: string;
+          origin_city: string;
+          origin_country_code: string;
+          destination_city?: string;
+          destination_country_code?: string;
+          departure_at?: string | null;
+          arrival_at: string;
+          available_weight_kg: number;
+          service_type?: "shop_and_ship" | "ship_only" | "both";
+          accepted_categories?: string[];
+          notes?: string | null;
+          delivery_preferences?: string[];
+          status?: "draft" | "active" | "paused" | "expired" | "cancelled";
+          published_at?: string | null;
+          expires_at?: string | null;
+          view_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          traveler_id?: string;
+          origin_city?: string;
+          origin_country_code?: string;
+          destination_city?: string;
+          destination_country_code?: string;
+          departure_at?: string | null;
+          arrival_at?: string;
+          available_weight_kg?: number;
+          service_type?: "shop_and_ship" | "ship_only" | "both";
+          accepted_categories?: string[];
+          notes?: string | null;
+          delivery_preferences?: string[];
+          status?: "draft" | "active" | "paused" | "expired" | "cancelled";
+          published_at?: string | null;
+          expires_at?: string | null;
+          view_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
     };

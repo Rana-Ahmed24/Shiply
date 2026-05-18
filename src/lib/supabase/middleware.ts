@@ -78,6 +78,11 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(new URL(DEFAULT_AUTH_REDIRECT, request.url));
     }
 
+    // Signed-in users should not see the public landing hero on /
+    if (user && onboardingComplete && pathname === "/") {
+      return NextResponse.redirect(new URL(DEFAULT_AUTH_REDIRECT, request.url));
+    }
+
     if (isProtected && !user) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = DEFAULT_LOGIN_PATH;

@@ -1,8 +1,10 @@
 import { z } from "zod";
 
-import { ONBOARDING_ROLES } from "@/lib/auth/roles";
-
-const email = z.string().trim().email("Enter a valid email address");
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Enter a valid email address");
 const password = z
   .string()
   .min(8, "Password must be at least 8 characters")
@@ -35,9 +37,9 @@ export const resetPasswordSchema = z
 
 export const onboardingSchema = z.object({
   fullName: z.string().trim().min(2, "Name must be at least 2 characters"),
-  roles: z
-    .array(z.enum(ONBOARDING_ROLES))
-    .min(1, "Select at least one role"),
+  preferredMode: z.enum(["customer", "traveler"], {
+    message: "Choose how you want to start on Shiply",
+  }),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

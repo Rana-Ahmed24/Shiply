@@ -2,12 +2,21 @@ import Link from "next/link";
 
 import { UserNav } from "@/components/auth/user-nav";
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
+import { AppModeHydrator } from "@/components/mode/app-mode-hydrator";
+import { ModeToggle } from "@/components/mode/mode-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/server";
+import type { AppMode } from "@/lib/mode/constants";
+import { getAppMode } from "@/lib/mode/server";
 import { cn } from "@/lib/utils";
 
 export async function SiteHeader() {
   const session = await getSession();
+  const mode = session
+    ? await getAppMode(
+        (session.profile?.preferred_mode as AppMode | undefined) ?? "customer"
+      )
+    : null;
 
   const loggedOutDesktop = (
     <>
@@ -55,19 +64,29 @@ export async function SiteHeader() {
     </>
   );
 
-  const loggedIn = session ? (
-    <UserNav
-      userId={session.user.id}
-      email={session.user.email ?? ""}
-      fullName={session.profile?.full_name}
-      roles={session.profile?.roles}
-    />
+  const userNav =
+    session && mode ? (
+      <UserNav
+        userId={session.user.id}
+        email={session.user.email ?? ""}
+        fullName={session.profile?.full_name}
+        appMode={mode}
+      />
+    ) : null;
+
+  const modeToggle = session ? (
+    <ModeToggle mode={mode!} />
   ) : null;
 
   return (
-    <SiteHeaderClient
-      desktopAuth={session ? loggedIn : loggedOutDesktop}
-      mobileAuth={session ? loggedIn : loggedOutMobile}
-    />
+    <>
+      {session && mode ? <AppModeHydrator mode={mode} /> : null}
+      <SiteHeaderClient
+        logoHref={session ? "/home" : "/"}
+        desktopAuth={session ? userNav : loggedOutDesktop}
+        mobileAuth={session ? userNav : loggedOutMobile}
+        modeToggle={modeToggle}
+      />
+    </>
   );
 }

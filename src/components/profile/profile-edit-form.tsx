@@ -116,7 +116,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       <CardHeader>
         <CardTitle>Edit profile</CardTitle>
         <CardDescription>
-          Update how you appear to other HitchHiker members.
+          Update how you appear to other Shiply members.
         </CardDescription>
       </CardHeader>
       <CardContent>

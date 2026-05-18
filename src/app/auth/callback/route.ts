@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-import { postAuthRedirectResponse } from "@/lib/auth/post-auth-redirect";
 import { ensureProfile, resolvePostAuthPath } from "@/lib/auth/profile";
-import { createClient } from "@/lib/supabase/server";
+import { ONBOARDING_PATH } from "@/lib/auth/config";
+import { createAuthRouteClient } from "@/lib/supabase/auth-route";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const next = searchParams.get("next");
 
@@ -32,7 +32,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
   }
 
-  const supabase = await createClient();
+  const { supabase, setRedirectPath, redirectResponse } = createAuthRouteClient(
+    request,
+    ONBOARDING_PATH
+  );
+
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
@@ -51,6 +55,7 @@ export async function GET(request: Request) {
 
   const profile = await ensureProfile(supabase, user);
   const path = resolvePostAuthPath(user, profile, next);
+  setRedirectPath(path);
 
-  return postAuthRedirectResponse(request, path);
+  return redirectResponse();
 }

@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
   }
 
   if (!needsOnboarding(session.user, session.profile)) {
-    redirect("/dashboard");
+    redirect("/home");
   }
 
   const defaultFullName =

@@ -35,7 +35,10 @@ export async function ensureProfile(
     id: user.id,
     email,
     full_name: fullName,
-    avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+    avatar_url:
+      (user.user_metadata?.avatar_url as string | undefined) ??
+      (user.user_metadata?.picture as string | undefined) ??
+      null,
     roles: ["customer"],
     onboarding_completed: false,
   });

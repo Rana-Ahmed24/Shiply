@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
+import { MODE_COOKIE } from "@/lib/mode/constants";
 
 import {
   DEFAULT_LOGIN_PATH,
@@ -53,7 +56,7 @@ export async function loginAction(
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return { error: mapAuthError(error.message) };
+    return { error: mapAuthError(error.message, error.code) };
   }
 
   const {
@@ -84,7 +87,7 @@ export async function signupAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -97,7 +100,15 @@ export async function signupAction(
   });
 
   if (error) {
-    return { error: mapAuthError(error.message) };
+    console.warn("[auth] signUp failed:", error.code, error.message);
+    return { error: mapAuthError(error.message, error.code) };
+  }
+
+  if (data.user && data.user.identities?.length === 0) {
+    return {
+      error:
+        "An account with this email already exists. Sign in, or use forgot password if you need access.",
+    };
   }
 
   const baseUrl = await getAuthBaseUrl();
@@ -132,7 +143,7 @@ export async function forgotPasswordAction(
   });
 
   if (error) {
-    return { error: mapAuthError(error.message) };
+    return { error: mapAuthError(error.message, error.code) };
   }
 
   return {
@@ -159,7 +170,7 @@ export async function resetPasswordAction(
   });
 
   if (error) {
-    return { error: mapAuthError(error.message) };
+    return { error: mapAuthError(error.message, error.code) };
   }
 
   return { redirectTo: "/login?message=password_updated" };
@@ -175,13 +186,15 @@ export async function signInWithGoogleAction(formData: FormData) {
       redirectTo: await authCallbackUrl(redirectTo),
       queryParams: {
         access_type: "offline",
-        prompt: "consent",
+        prompt: "select_account",
       },
     },
   });
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(mapAuthError(error.message))}`);
+    redirect(
+      `/login?error=${encodeURIComponent(mapAuthError(error.message, error.code))}`
+    );
   }
 
   if (data.url) {
@@ -195,11 +208,9 @@ export async function completeOnboardingAction(
   _prevState: AuthActionState,
   formData: FormData
 ): Promise<AuthActionState> {
-  const rolesRaw = formData.getAll("roles") as OnboardingRole[];
-
   const parsed = onboardingSchema.safeParse({
     fullName: formData.get("fullName"),
-    roles: rolesRaw,
+    preferredMode: formData.get("preferredMode"),
   });
 
   if (!parsed.success) {
@@ -227,12 +238,15 @@ export async function completeOnboardingAction(
     return { error: mapAuthError(metaError.message) };
   }
 
+  const allRoles: OnboardingRole[] = ["customer", "traveler"];
+
   const { error: profileError } = await updateProfileOnboarding(
     supabase,
     user.id,
     {
       full_name: parsed.data.fullName,
-      roles: parsed.data.roles,
+      roles: allRoles,
+      preferred_mode: parsed.data.preferredMode,
       onboarding_completed: true,
     }
   );
@@ -241,8 +255,15 @@ export async function completeOnboardingAction(
     return { error: mapAuthError(profileError.message) };
   }
 
+  const cookieStore = await cookies();
+  cookieStore.set(MODE_COOKIE, parsed.data.preferredMode, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+
   revalidatePath("/", "layout");
-  return { redirectTo: "/dashboard" };
+  return { redirectTo: "/home" };
 }
 
 export async function signOutAction() {
