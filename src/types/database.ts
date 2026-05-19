@@ -331,6 +331,25 @@ export type Database = {
         Update: Record<string, unknown>;
         Relationships: [];
       };
+      messages: {
+        Row: {
+          id: string;
+          match_id: string;
+          sender_id: string;
+          body: string;
+          is_system: boolean;
+          created_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          match_id: string;
+          sender_id: string;
+          body: string;
+          is_system?: boolean;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;

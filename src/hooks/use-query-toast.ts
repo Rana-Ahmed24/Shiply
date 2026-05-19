@@ -17,8 +17,9 @@ const TOAST_MESSAGES: Record<
   },
   match_accepted: {
     variant: "success",
-    title: "Request accepted",
-    description: "Request accepted successfully.",
+    title: "Request accepted successfully",
+    description:
+      "The match is active. Open the Accepted tab to chat and coordinate delivery.",
   },
   match_rejected: {
     variant: "success",

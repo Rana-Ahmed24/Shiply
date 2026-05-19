@@ -5,13 +5,14 @@ import {
   type ListingForMatch,
   type RequestForMatch,
 } from "@/lib/matching/compatibility";
+import { ACCEPTED_DB_STATUSES } from "@/lib/matching/constants";
 import { MATCH_SELECT, type MatchRowRaw } from "@/lib/matching/db";
 import { mapMatchToCard } from "@/lib/matching/mappers";
 import { isMissingColumnError } from "@/lib/profile/db";
 import { LISTING_SELECT_BASE } from "@/lib/listings/db";
 import { createClient } from "@/lib/supabase/server";
 import type { CompatibilityResult } from "@/types/match";
-import type { HomeMatchItem } from "@/types/home-match";
+import type { HomeMatchItem, MatchesFeed } from "@/types/home-match";
 import type { MatchCardModel, MatchDetailModel } from "@/types/match";
 
 async function isTravelerVerified(
@@ -120,6 +121,33 @@ function formatPickup(
   return "Any origin";
 }
 
+function formatArrival(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  try {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(iso));
+  } catch {
+    return null;
+  }
+}
+
+function formatAcceptedAt(iso: string | null): string | null {
+  if (!iso) return null;
+  try {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(iso));
+  } catch {
+    return null;
+  }
+}
+
 async function enrichMatchMeta(
   rows: MatchRowRaw[],
   viewerId: string,
@@ -142,12 +170,14 @@ async function enrichMatchMeta(
     ? "id, title, preferred_origin_country_code, preferred_origin_city"
     : "id, title";
 
+  const listingSelect = options?.homeDetail
+    ? "id, origin_city, origin_country_code, destination_city, destination_country_code, arrival_at"
+    : "id, origin_city, origin_country_code, destination_city, destination_country_code";
+
   const [listingsRes, requestsRes, profilesRes] = await Promise.all([
     supabase
       .from("traveler_listings")
-      .select(
-        "id, origin_city, origin_country_code, destination_city, destination_country_code"
-      )
+      .select(listingSelect)
       .in("id", listingIds),
     supabase.from("customer_requests").select(requestSelect).in("id", requestIds),
     supabase.from("profiles").select("id, full_name").in("id", [...profileIds]),
@@ -158,6 +188,7 @@ async function enrichMatchMeta(
     origin_city: string;
     destination_city: string;
     destination_country_code: string;
+    arrival_at?: string;
   };
 
   type RequestRow = {
@@ -213,6 +244,15 @@ async function enrichMatchMeta(
       ...card,
       pickupLabel,
       destinationLabel,
+      listingId: row.listing_id,
+      requestId: row.request_id,
+      customerId: row.customer_id,
+      travelerId: row.traveler_id,
+      acceptedAt: row.accepted_at,
+      acceptedAtLabel: formatAcceptedAt(row.accepted_at),
+      estimatedArrivalLabel: formatArrival(listing?.arrival_at),
+      isViewerCustomer: row.customer_id === viewerId,
+      isViewerTraveler: row.traveler_id === viewerId,
     } satisfies HomeMatchItem;
   });
 }
@@ -242,7 +282,7 @@ export async function getIncomingMatchesForTraveler(
   })) as HomeMatchItem[];
 }
 
-export async function getSentMatchesForCustomer(
+export async function getSentPendingMatchesForCustomer(
   customerId: string
 ): Promise<HomeMatchItem[]> {
   const supabase = await createClient();
@@ -250,11 +290,12 @@ export async function getSentMatchesForCustomer(
     .from("delivery_matches")
     .select(MATCH_SELECT)
     .eq("customer_id", customerId)
+    .eq("status", "pending")
     .order("created_at", { ascending: false })
     .limit(HOME_MATCH_LIMIT);
 
   if (error) {
-    console.error("[matching] getSentMatchesForCustomer:", error.message);
+    console.error("[matching] getSentPendingMatchesForCustomer:", error.message);
     return [];
   }
 
@@ -281,20 +322,121 @@ export async function countPendingIncomingForTraveler(
   return count ?? 0;
 }
 
-export async function countSentMatchesForCustomer(
+export async function countSentPendingForCustomer(
   customerId: string
 ): Promise<number> {
   const supabase = await createClient();
   const { count, error } = await supabase
     .from("delivery_matches")
     .select("id", { count: "exact", head: true })
-    .eq("customer_id", customerId);
+    .eq("customer_id", customerId)
+    .eq("status", "pending");
 
   if (error) {
-    console.error("[matching] countSentMatches:", error.message);
+    console.error("[matching] countSentPending:", error.message);
     return 0;
   }
   return count ?? 0;
+}
+
+export async function getAcceptedMatchesForUser(
+  userId: string
+): Promise<HomeMatchItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("delivery_matches")
+    .select(MATCH_SELECT)
+    .or(`traveler_id.eq.${userId},customer_id.eq.${userId}`)
+    .in("status", ACCEPTED_DB_STATUSES)
+    .order("accepted_at", { ascending: false, nullsFirst: false })
+    .limit(HOME_MATCH_LIMIT);
+
+  if (error) {
+    console.error("[matching] getAcceptedMatchesForUser:", error.message);
+    return [];
+  }
+
+  return (await enrichMatchMeta((data ?? []) as MatchRowRaw[], userId, {
+    homeDetail: true,
+  })) as HomeMatchItem[];
+}
+
+export async function countAcceptedMatchesForUser(userId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("delivery_matches")
+    .select("id", { count: "exact", head: true })
+    .or(`traveler_id.eq.${userId},customer_id.eq.${userId}`)
+    .in("status", ACCEPTED_DB_STATUSES);
+
+  if (error) {
+    console.error("[matching] countAcceptedMatches:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function countAcceptedForCustomer(customerId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("delivery_matches")
+    .select("id", { count: "exact", head: true })
+    .eq("customer_id", customerId)
+    .in("status", ACCEPTED_DB_STATUSES);
+
+  if (error) {
+    console.error("[matching] countAcceptedForCustomer:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function countAcceptedForTraveler(travelerId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("delivery_matches")
+    .select("id", { count: "exact", head: true })
+    .eq("traveler_id", travelerId)
+    .in("status", ACCEPTED_DB_STATUSES);
+
+  if (error) {
+    console.error("[matching] countAcceptedForTraveler:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function getMatchesFeed(userId: string): Promise<MatchesFeed> {
+  const [
+    sent,
+    incoming,
+    accepted,
+    sentCount,
+    incomingCount,
+    acceptedCount,
+    customerAcceptedCount,
+    travelerAcceptedCount,
+  ] = await Promise.all([
+    getSentPendingMatchesForCustomer(userId),
+    getIncomingMatchesForTraveler(userId),
+    getAcceptedMatchesForUser(userId),
+    countSentPendingForCustomer(userId),
+    countPendingIncomingForTraveler(userId),
+    countAcceptedMatchesForUser(userId),
+    countAcceptedForCustomer(userId),
+    countAcceptedForTraveler(userId),
+  ]);
+
+  return {
+    sent,
+    incoming,
+    accepted,
+    sentCount,
+    incomingCount,
+    acceptedCount,
+    customerAcceptedCount,
+    travelerAcceptedCount,
+  };
 }
 
 export async function getMatchesForUser(
@@ -314,6 +456,31 @@ export async function getMatchesForUser(
   }
 
   return await enrichMatchMeta((data ?? []) as MatchRowRaw[], userId);
+}
+
+export async function getMatchHomeItem(
+  id: string,
+  viewerId: string
+): Promise<HomeMatchItem | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("delivery_matches")
+    .select(MATCH_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const row = data as MatchRowRaw;
+  if (row.traveler_id !== viewerId && row.customer_id !== viewerId) {
+    return null;
+  }
+
+  const items = (await enrichMatchMeta([row], viewerId, {
+    homeDetail: true,
+  })) as HomeMatchItem[];
+
+  return items[0] ?? null;
 }
 
 export async function getMatchById(

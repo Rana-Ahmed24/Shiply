@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 
+import { MatchAcceptedCard } from "@/components/matching/match-accepted-card";
 import { MatchStatusBadge } from "@/components/matching/match-status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -45,9 +46,17 @@ export function HomeMatchRow({
     {}
   );
 
-  useActionStateToast(acceptState);
+  useActionStateToast(acceptState, { successTitle: "Request accepted successfully" });
   useActionStateToast(rejectState);
   useActionStateToast(cancelState);
+
+  if (match.displayStatus === "accepted") {
+    return (
+      <li>
+        <MatchAcceptedCard match={match} />
+      </li>
+    );
+  }
 
   const counterpartyLabel = variant === "incoming" ? "Customer" : "Traveler";
 
@@ -124,7 +133,7 @@ export function HomeMatchRow({
           <form action={acceptAction}>
             <input type="hidden" name="matchId" value={match.id} />
             <input type="hidden" name="returnTo" value={returnTo} />
-            <input type="hidden" name="returnTab" value={returnTab} />
+            <input type="hidden" name="returnTab" value="accepted" />
             <Button
               type="submit"
               size="sm"

@@ -44,3 +44,12 @@ export const ACTIVE_MATCH_STATUSES: DbMatchStatus[] = [
   "in_transit",
   "delivered",
 ];
+
+/** DB statuses shown in the Accepted matches tab */
+export const ACCEPTED_DB_STATUSES: DbMatchStatus[] = [
+  "accepted",
+  "deposit_pending",
+  "deposit_held",
+  "in_transit",
+  "delivered",
+];

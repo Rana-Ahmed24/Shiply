@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeMatchesSummary } from "@/components/home/home-matches-summary";
+import { HomeMatchesSummaryLive } from "@/components/home/home-matches-summary-live";
 import { HomeModeFeed } from "@/components/home/home-mode-feed";
 import type { AppMode } from "@/lib/mode/constants";
 import type { ListingCardModel } from "@/types/listing";
@@ -12,6 +12,9 @@ type HomeFeedExperienceProps = {
   requests: RequestCardModel[];
   sentCount: number;
   incomingCount: number;
+  customerAcceptedCount: number;
+  travelerAcceptedCount: number;
+  userId: string;
 };
 
 export function HomeFeedExperience({
@@ -20,13 +23,21 @@ export function HomeFeedExperience({
   requests,
   sentCount,
   incomingCount,
+  customerAcceptedCount,
+  travelerAcceptedCount,
+  userId,
 }: HomeFeedExperienceProps) {
   return (
     <div className="space-y-6">
-      <HomeMatchesSummary
+      <HomeMatchesSummaryLive
         mode={mode}
-        sentCount={sentCount}
-        incomingCount={incomingCount}
+        userId={userId}
+        initial={{
+          sentCount,
+          incomingCount,
+          customerAcceptedCount,
+          travelerAcceptedCount,
+        }}
       />
       <HomeModeFeed mode={mode} travelers={travelers} requests={requests} />
     </div>

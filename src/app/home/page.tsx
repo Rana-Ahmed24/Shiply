@@ -6,8 +6,10 @@ import { Container } from "@/components/layout/container";
 import { requireSession } from "@/lib/auth/server";
 import { searchListings } from "@/lib/listings/queries";
 import {
+  countAcceptedForCustomer,
+  countAcceptedForTraveler,
   countPendingIncomingForTraveler,
-  countSentMatchesForCustomer,
+  countSentPendingForCustomer,
 } from "@/lib/matching/queries";
 import { getAppMode } from "@/lib/mode/server";
 import type { AppMode } from "@/lib/mode/constants";
@@ -29,11 +31,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const userId = profile!.id;
 
-  const [travelersResult, requests, incomingCount, sentCount] = await Promise.all([
+  const [
+    travelersResult,
+    requests,
+    incomingCount,
+    sentCount,
+    customerAcceptedCount,
+    travelerAcceptedCount,
+  ] = await Promise.all([
     searchListings({ sort: "arrival_asc", page: "1" }),
     getOpenRequestsForBrowse(24),
     countPendingIncomingForTraveler(userId),
-    countSentMatchesForCustomer(userId),
+    countSentPendingForCustomer(userId),
+    countAcceptedForCustomer(userId),
+    countAcceptedForTraveler(userId),
   ]);
 
   return (
@@ -47,6 +58,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         requests={requests}
         sentCount={sentCount}
         incomingCount={incomingCount}
+        customerAcceptedCount={customerAcceptedCount}
+        travelerAcceptedCount={travelerAcceptedCount}
+        userId={userId}
       />
     </Container>
   );

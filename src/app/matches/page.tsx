@@ -3,15 +3,10 @@ import { redirect } from "next/navigation";
 
 import { FlashMessageDialog } from "@/components/feedback/flash-message-dialog";
 import { Container } from "@/components/layout/container";
-import { MatchesPageTabs } from "@/components/matching/matches-page-tabs";
+import { MatchesPageLive } from "@/components/matching/matches-page-live";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/server";
-import {
-  countPendingIncomingForTraveler,
-  countSentMatchesForCustomer,
-  getIncomingMatchesForTraveler,
-  getSentMatchesForCustomer,
-} from "@/lib/matching/queries";
+import { getMatchesFeed } from "@/lib/matching/queries";
 import { cn } from "@/lib/utils";
 
 type MatchesPageProps = {
@@ -25,14 +20,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     redirect("/login?next=/matches");
   }
 
-  const userId = session.user.id;
-
-  const [sent, incoming, sentCount, incomingCount] = await Promise.all([
-    getSentMatchesForCustomer(userId),
-    getIncomingMatchesForTraveler(userId),
-    countSentMatchesForCustomer(userId),
-    countPendingIncomingForTraveler(userId),
-  ]);
+  const feed = await getMatchesFeed(session.user.id);
 
   return (
     <Container className="space-y-8 py-10 pb-24 md:py-14 md:pb-10">
@@ -41,8 +29,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         <div>
           <h1 className="text-display text-3xl">Matches</h1>
           <p className="mt-2 max-w-xl text-muted-foreground">
-            Sent and incoming delivery requests. You can act as both customer and
-            traveler — both lists are always available here.
+            Sent, incoming, and accepted delivery requests. Updates live when
+            status changes.
           </p>
         </div>
         <Link
@@ -53,12 +41,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         </Link>
       </div>
 
-      <MatchesPageTabs
-        sent={sent}
-        incoming={incoming}
-        sentCount={sentCount}
-        incomingCount={incomingCount}
-      />
+      <MatchesPageLive initialFeed={feed} userId={session.user.id} />
     </Container>
   );
 }

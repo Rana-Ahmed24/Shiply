@@ -1,27 +1,29 @@
-const PUBLIC_KEYS = [
-  "NEXT_PUBLIC_SUPABASE_URL",
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-] as const;
+/**
+ * Public Supabase env — must use static `process.env.NEXT_PUBLIC_*` access so
+ * Next.js can inline values in the browser bundle (dynamic `process.env[name]` is undefined client-side).
+ */
+function publicUrl(): string | undefined {
+  const value = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  return value && value.length > 0 ? value : undefined;
+}
 
-function readEnv(name: string): string | undefined {
-  const value = process.env[name]?.trim();
+function publicAnonKey(): string | undefined {
+  const value = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
   return value && value.length > 0 ? value : undefined;
 }
 
 export function hasSupabaseEnv(): boolean {
-  return Boolean(
-    readEnv("NEXT_PUBLIC_SUPABASE_URL") && readEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-  );
+  return Boolean(publicUrl() && publicAnonKey());
 }
 
 export function getPublicSupabaseEnv() {
-  const url = readEnv("NEXT_PUBLIC_SUPABASE_URL");
-  const anonKey = readEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const url = publicUrl();
+  const anonKey = publicAnonKey();
 
   if (!url || !anonKey) {
     throw new Error(
-      `Missing Supabase environment variables: ${PUBLIC_KEYS.join(", ")}. ` +
-        "Copy .env.example to .env.local and add your project credentials."
+      "Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
+        "Copy .env.example to .env.local and add your project credentials, then restart the dev server."
     );
   }
 
@@ -29,22 +31,20 @@ export function getPublicSupabaseEnv() {
 }
 
 export function getServiceRoleKey(): string {
-  const key = readEnv("SUPABASE_SERVICE_ROLE_KEY");
-
-  if (!key) {
+  const value = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!value) {
     throw new Error(
       "Missing SUPABASE_SERVICE_ROLE_KEY. Required for server-only admin operations."
     );
   }
-
-  return key;
+  return value;
 }
 
 export function getSiteUrl(): string {
-  return (
-    readEnv("NEXT_PUBLIC_SITE_URL") ??
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000")
-  );
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (fromEnv) return fromEnv;
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
 }

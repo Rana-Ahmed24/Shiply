@@ -11,6 +11,7 @@ import {
 } from "@/lib/matching/compatibility";
 import { PLATFORM_FEE_RATE } from "@/lib/matching/constants";
 import { insertMatch, updateMatchById } from "@/lib/matching/db";
+import { seedMatchChatWelcome } from "@/lib/matching/chat";
 import { notifyMatchUpdate } from "@/lib/matching/notifications";
 import {
   fetchListingForMatch,
@@ -200,23 +201,27 @@ export async function acceptMatchAction(
     .update({ status: "matched", lifecycle_status: "accepted" })
     .eq("id", match.request_id);
 
+  await seedMatchChatWelcome(matchId, user.id);
+
   await notifyMatchUpdate({
     userId: match.initiated_by,
-    title: "Match accepted",
-    body: "The other party accepted your delivery match.",
+    title: "Request accepted",
+    body: "Your delivery request was accepted. Open Matches to view details and chat.",
     matchId,
+    extra: { status: "accepted" },
   });
 
   revalidatePath("/home");
   revalidatePath("/matches");
   revalidatePath(`/matches/${matchId}`);
+  revalidatePath(`/messages/${matchId}`);
 
   const dest = returnPath(formData, "/matches");
   if (dest === "/home") {
     redirectWithToast("/home", "match_accepted");
   }
   if (dest === "/matches") {
-    redirectWithToast(matchesListPath(formData), "match_accepted");
+    redirectWithToast("/matches?tab=accepted", "match_accepted");
   }
   redirect(`/matches/${matchId}?message=match_accepted`);
 }
