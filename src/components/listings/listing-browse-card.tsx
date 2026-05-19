@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ListingTripDates } from "@/components/listings/listing-trip-dates";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -45,18 +46,21 @@ export function ListingBrowseCard({ listing, className }: ListingBrowseCardProps
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
-        <div>
-          <p className="text-[0.65rem] uppercase text-muted-foreground">Travel</p>
-          <p className="mt-0.5 font-medium">{listing.arrives}</p>
-        </div>
+      <ListingTripDates
+        departs={listing.departs}
+        arrives={listing.arrives}
+        className="mt-4"
+        compact
+      />
+
+      <div className="mt-3 grid grid-cols-2 gap-2 text-center text-sm">
         <div>
           <p className="text-[0.65rem] uppercase text-muted-foreground">Space</p>
           <p className="mt-0.5 font-medium">{listing.capacity}</p>
         </div>
         <div>
-          <p className="text-[0.65rem] uppercase text-muted-foreground">Trips</p>
-          <p className="mt-0.5 font-medium">{listing.reviewCount} reviews</p>
+          <p className="text-[0.65rem] uppercase text-muted-foreground">Reviews</p>
+          <p className="mt-0.5 font-medium">{listing.reviewCount}</p>
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { ListingTripDates } from "@/components/listings/listing-trip-dates";
 import { Badge } from "@/components/ui/badge";
 import type { TravelerListing } from "@/types/listing";
 import { cn } from "@/lib/utils";
@@ -22,31 +23,19 @@ export function TravelerListingCard({
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium">
           <span className="mr-1">{listing.origin.flag}</span>
-
-          <span className={fontSyne.className}>
-            {listing.origin.city}
-          </span>
-
+          <span className={fontSyne.className}>{listing.origin.city}</span>
           <span className="mx-2 text-muted-foreground">→</span>
-
           <span className="mr-1">{listing.destination.flag}</span>
-
-          <span className={fontSyne.className}>
-            {listing.destination.city}
-          </span>
+          <span className={fontSyne.className}>{listing.destination.city}</span>
         </p>
         <Badge className="shrink-0 rounded-full border-0 bg-brand-gold/15 px-2.5 text-brand-gold">
           {listing.rating} ★
         </Badge>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div>
-          <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
-            Arrives
-          </p>
-          <p className="mt-1 text-sm font-medium">{listing.arrives}</p>
-        </div>
+      <ListingTripDates departs={null} arrives={listing.arrives} className="mt-4" />
+
+      <div className="mt-4 grid grid-cols-2 gap-3 text-center">
         <div>
           <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
             Capacity

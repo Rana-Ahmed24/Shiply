@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, MessageSquare, Package, User } from "lucide-react";
+import { Handshake, Home, MessageSquare, Package, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/home", label: "Home", icon: Home },
+  { href: "/matches", label: "Matches", icon: Handshake },
   { href: "/requests", label: "Requests", icon: Package },
   { href: "/messages", label: "Messages", icon: MessageSquare },
   { href: "/profile", label: "Profile", icon: User },

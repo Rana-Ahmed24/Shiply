@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-heading);
+  --font-heading: var(--font-syne);
   --color-brand-navy: var(--brand-navy);
   --color-brand-gold: var(--brand-gold);
   --color-brand-teal: var(--brand-teal);
@@ -150,13 +150,19 @@
 
 @layer utilities {
   .text-display {
-    font-family: 'Syne', sans-serif;
+    font-family: var(--font-syne), "Syne", sans-serif;
     font-size: 2.75rem;
     font-weight: 800;
     line-height: 1.1;
-    color: var(--white);
+    color: var(--foreground);
     margin-bottom: 1.25rem;
     letter-spacing: -1px;
+  }
+
+  select,
+  select option {
+    background-color: var(--popover);
+    color: var(--popover-foreground);
   }
 
   .text-lead {

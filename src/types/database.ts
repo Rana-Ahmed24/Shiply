@@ -293,6 +293,68 @@ export type Database = {
         };
         Relationships: [];
       };
+      delivery_matches: {
+        Row: {
+          id: string;
+          listing_id: string;
+          request_id: string;
+          traveler_id: string;
+          customer_id: string;
+          agreed_price: number;
+          currency: string;
+          platform_fee_amount: number;
+          status: string;
+          initiated_by: string;
+          accepted_at: string | null;
+          completed_at: string | null;
+          cancelled_at: string | null;
+          cancellation_reason: string | null;
+          compatibility_score: number | null;
+          compatibility_factors: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          request_id: string;
+          traveler_id: string;
+          customer_id: string;
+          agreed_price: number;
+          currency?: string;
+          platform_fee_amount?: number;
+          status?: string;
+          initiated_by: string;
+          compatibility_score?: number | null;
+          compatibility_factors?: Json;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          channel: string;
+          title: string;
+          body: string;
+          data: Json;
+          read_at: string | null;
+          sent_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          type: string;
+          channel?: string;
+          title: string;
+          body: string;
+          data?: Json;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

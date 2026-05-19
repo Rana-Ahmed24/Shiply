@@ -1,3 +1,4 @@
+import { FlashMessageDialog } from "@/components/feedback/flash-message-dialog";
 import { HomeDashboardHeader } from "@/components/home/home-dashboard-header";
 import { HomeFeedExperience } from "@/components/home/home-feed-experience";
 import { Container } from "@/components/layout/container";
@@ -7,7 +8,12 @@ import { getAppMode } from "@/lib/mode/server";
 import type { AppMode } from "@/lib/mode/constants";
 import { getOpenRequestsForBrowse } from "@/lib/requests/queries";
 
-export default async function HomePage() {
+type HomePageProps = {
+  searchParams: Promise<{ message?: string }>;
+};
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
   const { profile } = await requireSession(
     `/login?redirectTo=${encodeURIComponent("/home")}`
   );
@@ -23,6 +29,7 @@ export default async function HomePage() {
 
   return (
     <Container className="max-w-6xl space-y-6 py-6 pb-24 md:space-y-8 md:py-8 md:pb-10">
+      <FlashMessageDialog messageKey={params.message} />
       <HomeDashboardHeader mode={mode} />
       <HomeFeedExperience
         mode={mode}

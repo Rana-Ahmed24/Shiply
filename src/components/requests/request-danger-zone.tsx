@@ -1,46 +1,41 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
+import { useState, useTransition } from "react";
 
 import {
   cancelRequestAction,
   deleteRequestAction,
 } from "@/lib/requests/actions";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type RequestDangerZoneProps = {
   requestId: string;
   canCancel: boolean;
 };
 
-function PendingButton({
-  label,
-  pendingLabel,
-  variant = "outline",
-}: {
-  label: string;
-  pendingLabel: string;
-  variant?: "outline" | "destructive";
-}) {
-  const { pending } = useFormStatus();
-  return (
-    <Button
-      type="submit"
-      variant={variant}
-      disabled={pending}
-      className="rounded-2xl border-destructive/40 text-destructive hover:bg-destructive/10"
-    >
-      {pending ? pendingLabel : label}
-    </Button>
-  );
-}
-
 export function RequestDangerZone({
   requestId,
   canCancel,
 }: RequestDangerZoneProps) {
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
   const cancelAction = cancelRequestAction.bind(null, requestId);
   const deleteAction = deleteRequestAction.bind(null, requestId);
+
+  function handleCancel() {
+    startTransition(() => {
+      cancelAction();
+    });
+  }
+
+  function handleDelete() {
+    startTransition(() => {
+      deleteAction();
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -51,21 +46,26 @@ export function RequestDangerZone({
             Mark as cancelled — travelers will no longer see it, but you can
             still view it in your list.
           </p>
-          <form
-            action={cancelAction}
-            className="mt-4"
-            onSubmit={(e) => {
-              if (
-                !window.confirm(
-                  "Cancel this request? Travelers will no longer be able to accept it."
-                )
-              ) {
-                e.preventDefault();
-              }
-            }}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pending}
+            onClick={() => setCancelOpen(true)}
+            className="mt-4 rounded-2xl border-destructive/40 text-destructive hover:bg-destructive/10"
           >
-            <PendingButton label="Cancel request" pendingLabel="Cancelling…" />
-          </form>
+            {pending ? "Cancelling…" : "Cancel request"}
+          </Button>
+          <ConfirmDialog
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+            title="Cancel request"
+            description="Travelers will no longer be able to accept this request."
+            confirmLabel="Cancel request"
+            cancelLabel="Keep request"
+            destructive
+            pending={pending}
+            onConfirm={handleCancel}
+          />
         </div>
       )}
 
@@ -74,24 +74,26 @@ export function RequestDangerZone({
         <p className="mt-1 text-sm text-muted-foreground">
           Permanently remove this request and its data. This cannot be undone.
         </p>
-        <form
-          action={deleteAction}
-          className="mt-4"
-          onSubmit={(e) => {
-            if (
-              !window.confirm(
-                "Delete this request permanently? This cannot be undone."
-              )
-            ) {
-              e.preventDefault();
-            }
-          }}
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={() => setDeleteOpen(true)}
+          className="mt-4 rounded-2xl border-destructive/40 text-destructive hover:bg-destructive/10"
         >
-          <PendingButton
-            label="Delete request"
-            pendingLabel="Deleting…"
-          />
-        </form>
+          {pending ? "Deleting…" : "Delete request"}
+        </Button>
+        <ConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title="Delete request"
+          description="This action cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          destructive
+          pending={pending}
+          onConfirm={handleDelete}
+        />
       </div>
     </div>
   );

@@ -1,13 +1,12 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { FieldError } from "@/components/auth/field-error";
+import { useActionRedirect } from "@/hooks/use-action-redirect";
 import { updateProfileAction } from "@/lib/profile/actions";
 import {
   LANGUAGE_OPTIONS,
@@ -21,14 +20,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -62,9 +53,8 @@ function profileFormKey(profile: PublicProfile) {
 }
 
 export function ProfileEditForm({ profile }: ProfileEditFormProps) {
-  const router = useRouter();
   const [state, formAction] = useActionState(updateProfileAction, {});
-  const [successOpen, setSuccessOpen] = useState(false);
+  useActionRedirect(state.redirectTo);
   const formKey = useMemo(() => profileFormKey(profile), [profile]);
 
   const [fullName, setFullName] = useState(profile.full_name ?? "");
@@ -82,26 +72,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     setMeetupLocations(profile.meetup_locations.join(", "));
     setLanguages(profile.languages);
   }, [formKey, profile]);
-
-  useEffect(() => {
-    if (state.success) {
-      setSuccessOpen(true);
-    }
-  }, [state.success]);
-
-  function goHome() {
-    setSuccessOpen(false);
-    router.push("/");
-    router.refresh();
-  }
-
-  function handleSuccessOpenChange(open: boolean) {
-    setSuccessOpen(open);
-    if (!open && state.success) {
-      router.push("/");
-      router.refresh();
-    }
-  }
 
   function toggleLanguage(lang: string) {
     setLanguages((current) =>
@@ -121,30 +91,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       </CardHeader>
       <CardContent>
         {state.error && <AuthAlert>{state.error}</AuthAlert>}
-
-        <Dialog open={successOpen} onOpenChange={handleSuccessOpenChange}>
-          <DialogContent showCloseButton={false} className="text-center">
-            <DialogHeader className="items-center">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-brand-gold/15 text-brand-gold">
-                <CheckCircle2 className="size-7" aria-hidden />
-              </div>
-              <DialogTitle>Profile updated</DialogTitle>
-              <DialogDescription>
-                {state.success ??
-                  "Your changes were saved. Everything looks good."}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="sm:justify-center">
-              <Button
-                type="button"
-                onClick={goHome}
-                className="h-11 w-full rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90 sm:w-auto sm:min-w-40"
-              >
-                Go to home
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         <form key={formKey} action={formAction} className="space-y-6">
           <div className="space-y-2">

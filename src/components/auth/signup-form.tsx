@@ -45,7 +45,7 @@ export function SignupForm({ redirectTo }: SignupFormProps) {
     return (
       <Card className="rounded-2xl border-border/60 shadow-soft">
         <CardContent className="space-y-4 pt-6">
-          <AuthAlert variant="success">{state.success}</AuthAlert>
+          <p className="text-sm text-muted-foreground">{state.success}</p>
           <Link
             href="/login"
             className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-brand-gold text-sm font-medium text-brand-navy hover:bg-brand-gold/90"

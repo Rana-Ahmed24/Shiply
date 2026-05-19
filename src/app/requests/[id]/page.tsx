@@ -8,7 +8,12 @@ import { RequestLifecycleTracker } from "@/components/requests/request-lifecycle
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { TravelerAcceptPanel } from "@/components/matching/traveler-accept-panel";
 import { getSession } from "@/lib/auth/server";
+import {
+  getMatchByRequestId,
+  getTravelerActiveListingsForMatching,
+} from "@/lib/matching/queries";
 import { EDITABLE_LIFECYCLE } from "@/lib/requests/constants";
 import { getRequestById } from "@/lib/requests/queries";
 import { cn } from "@/lib/utils";
@@ -40,6 +45,18 @@ export default async function RequestDetailPage({
     request.lifecycle !== "delivered";
   const showDangerZone = isOwner;
 
+  const existingMatch = await getMatchByRequestId(id);
+  const canOfferDelivery =
+    !isOwner &&
+    session?.user.id &&
+    request.status === "open" &&
+    request.lifecycle === "pending" &&
+    (!existingMatch || existingMatch.status === "cancelled");
+
+  const travelerListings = canOfferDelivery
+    ? await getTravelerActiveListingsForMatching(session!.user.id)
+    : [];
+
   return (
     <Container className="space-y-8 py-10 md:py-14">
       {query.error === "delete_failed" && (
@@ -54,15 +71,6 @@ export default async function RequestDetailPage({
           instead, or contact support.
         </p>
       )}
-      {query.warning === "images_storage" && (
-        <p className="rounded-2xl border border-brand-gold/40 bg-brand-gold/10 px-4 py-3 text-sm">
-          Your request was saved, but photos could not be uploaded. In Supabase
-          SQL Editor, run fix-request-images-storage-policies.sql (or
-          setup-request-images-storage.sql), then edit this request to add
-          photos.
-        </p>
-      )}
-
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -183,6 +191,39 @@ export default async function RequestDetailPage({
                 : "Any country"}
             </p>
           </section>
+
+          {canOfferDelivery && (
+            <section className="rounded-2xl border border-border/60 p-6">
+              <h2 className="font-semibold">Offer to deliver</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Pick one of your active trips. Compatibility is checked before
+                sending.
+              </p>
+              <div className="mt-4">
+                <TravelerAcceptPanel requestId={id} listings={travelerListings} />
+              </div>
+            </section>
+          )}
+
+          {existingMatch &&
+            existingMatch.status !== "cancelled" &&
+            session?.user.id && (
+              <section className="rounded-2xl border border-border/60 p-6">
+                <h2 className="font-semibold">Delivery match</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  This request has an active match.
+                </p>
+                <Link
+                  href={`/matches/${existingMatch.id}`}
+                  className={cn(
+                    buttonVariants({ size: "sm" }),
+                    "mt-4 w-full rounded-2xl"
+                  )}
+                >
+                  View match
+                </Link>
+              </section>
+            )}
 
           {showDangerZone && (
             <section className="rounded-2xl border border-border/60 p-6">

@@ -66,7 +66,7 @@ export function RequestBrowseCard({ request, className }: RequestBrowseCardProps
           )}
           {request.neededBy && (
             <Badge variant="outline" className="rounded-full">
-              By {request.neededBy}
+              Need by {request.neededBy}
             </Badge>
           )}
         </div>

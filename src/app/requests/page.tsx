@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { FlashMessageDialog } from "@/components/feedback/flash-message-dialog";
 import { Container } from "@/components/layout/container";
 import { RequestGrid } from "@/components/requests/request-grid";
 import { buttonVariants } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export default async function RequestsDashboardPage({
 
   return (
     <Container className="space-y-8 py-10 md:py-14">
+      <FlashMessageDialog messageKey={params.message} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-display text-3xl">My requests</h1>
@@ -41,16 +43,6 @@ export default async function RequestsDashboardPage({
         </Link>
       </div>
 
-      {params.message === "cancelled" && (
-        <p className="rounded-2xl border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          Request cancelled.
-        </p>
-      )}
-      {params.message === "deleted" && (
-        <p className="rounded-2xl border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          Request deleted.
-        </p>
-      )}
       {params.error === "delete_policy" && (
         <p className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           Delete was blocked by database security. Run{" "}

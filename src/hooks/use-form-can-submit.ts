@@ -15,8 +15,7 @@ export function useFormCanSubmit(
       setCanSubmit(false);
       return;
     }
-    const extra = validate ? validate(form) : true;
-    setCanSubmit(form.checkValidity() && extra);
+    setCanSubmit(validate ? validate(form) : form.checkValidity());
   }, [formRef, validate]);
 
   useEffect(() => {

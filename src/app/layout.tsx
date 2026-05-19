@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { MainLayout } from "@/components/layout/main-layout";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ToastProvider } from "@/components/ui/toast-provider";
 import { SITE } from "@/lib/constants";
 import { fontSans, fontSyne } from "@/lib/fonts";
 
@@ -26,7 +27,9 @@ export default function RootLayout({
         className={`${fontSans.variable} ${fontSyne.variable} font-sans antialiased`}
       >
         <ThemeProvider>
-          <MainLayout>{children}</MainLayout>
+          <ToastProvider>
+            <MainLayout>{children}</MainLayout>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -44,7 +44,9 @@ export function ForgotPasswordForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         {state.error && <AuthAlert>{state.error}</AuthAlert>}
-        {state.success && <AuthAlert variant="success">{state.success}</AuthAlert>}
+        {state.success && (
+          <p className="text-sm text-muted-foreground">{state.success}</p>
+        )}
 
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">

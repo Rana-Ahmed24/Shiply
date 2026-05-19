@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { Home, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 
 import { signOutAction } from "@/lib/auth/actions";
@@ -13,20 +13,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppMode } from "@/lib/mode/client-store";
-import type { AppMode } from "@/lib/mode/constants";
-import { MODE_SHORT } from "@/lib/mode/constants";
 import { cn } from "@/lib/utils";
 
 type UserNavProps = {
   userId: string;
   email: string;
   fullName?: string | null;
-  appMode: AppMode;
+  roles?: string[];
 };
 
-export function UserNav({ userId, email, fullName, appMode }: UserNavProps) {
-  const mode = useAppMode(appMode);
+export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
   const initials = (fullName ?? email).slice(0, 2).toUpperCase();
 
   return (
@@ -40,25 +36,31 @@ export function UserNav({ userId, email, fullName, appMode }: UserNavProps) {
       >
         {initials}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 rounded-2xl">
+      <DropdownMenuContent
+        align="end"
+        className="w-56 rounded-2xl border border-border bg-popover text-popover-foreground"
+      >
         <DropdownMenuLabel className="font-normal">
-          <p className="font-medium">{fullName ?? "Account"}</p>
+          <p className="font-medium text-foreground">{fullName ?? "Account"}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
-          <p className="mt-1 text-xs font-medium capitalize text-brand-teal">
-            {MODE_SHORT[mode]}
-          </p>
+          {roles && roles.length > 0 && (
+            <p className="mt-1 text-xs capitalize text-brand-teal">
+              {roles.join(" · ")}
+            </p>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link href="/home" />}>
-            <LayoutDashboard className="size-4" />
+            <Home className="size-4 shrink-0" aria-hidden />
             Home
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link href={`/profile/${userId}`} />}>
+            <User className="size-4 shrink-0" aria-hidden />
             Profile
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link href="/settings" />}>
-            <Settings className="size-4" />
+            <Settings className="size-4 shrink-0" aria-hidden />
             Settings
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -68,7 +70,7 @@ export function UserNav({ userId, email, fullName, appMode }: UserNavProps) {
             variant="destructive"
             onClick={() => signOutAction()}
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-4 shrink-0" aria-hidden />
             Sign out
           </DropdownMenuItem>
         </DropdownMenuGroup>

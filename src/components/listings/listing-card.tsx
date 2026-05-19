@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ListingTripDates } from "@/components/listings/listing-trip-dates";
 import { Badge } from "@/components/ui/badge";
 import { fontSyne } from "@/lib/fonts";
 import type { ListingCardModel } from "@/types/listing";
@@ -40,13 +41,13 @@ export function ListingCard({ listing, className }: ListingCardProps) {
         </p>
       )}
 
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div>
-          <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
-            Arrives
-          </p>
-          <p className="mt-1 text-sm font-medium">{listing.arrives}</p>
-        </div>
+      <ListingTripDates
+        departs={listing.departs}
+        arrives={listing.arrives}
+        className="mt-4"
+      />
+
+      <div className="mt-4 grid grid-cols-2 gap-3 text-center">
         <div>
           <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
             Capacity

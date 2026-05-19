@@ -136,10 +136,7 @@ export async function updateListingAction(
   revalidatePath("/dashboard");
   revalidatePath("/");
 
-  return {
-    success: "Listing updated.",
-    redirectTo: `/listings/${listingId}`,
-  };
+  return { redirectTo: `/listings/${listingId}` };
 }
 
 export async function deleteListingAction(listingId: string) {
@@ -166,8 +163,9 @@ export async function deleteListingAction(listingId: string) {
   }
 
   revalidatePath("/travelers");
+  revalidatePath("/home");
   revalidatePath("/dashboard");
   revalidatePath("/");
 
-  redirect("/dashboard?message=listing_deleted");
+  redirect("/home?message=listing_deleted");
 }

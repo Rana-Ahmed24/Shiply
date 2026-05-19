@@ -5,8 +5,10 @@ import { Container } from "@/components/layout/container";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { RequestTravelerPanel } from "@/components/matching/request-traveler-panel";
 import { getSession } from "@/lib/auth/server";
 import { getListingById } from "@/lib/listings/queries";
+import { getCustomerOpenRequestsForMatching } from "@/lib/matching/queries";
 import { cn } from "@/lib/utils";
 
 type ListingPageProps = {
@@ -31,6 +33,13 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
   if (listing.status !== "active" && !ownsListing) {
     notFound();
   }
+
+  const isCustomer =
+    session?.user.id && session.user.id !== listing.travelerId;
+  const openRequests =
+    isCustomer && session
+      ? await getCustomerOpenRequestsForMatching(session.user.id)
+      : [];
 
   return (
     <Container className="space-y-8 py-10 md:py-14">
@@ -155,6 +164,22 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
           >
             View profile
           </Link>
+
+          {isCustomer && !ownsListing && (
+            <section className="mt-6 border-t border-border/60 pt-6">
+              <h3 className="font-semibold">Request delivery</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Link one of your open requests to this trip. We check route, dates,
+                category, capacity, and verification.
+              </p>
+              <div className="mt-4">
+                <RequestTravelerPanel
+                  listingId={id}
+                  requests={openRequests}
+                />
+              </div>
+            </section>
+          )}
         </aside>
       </div>
     </Container>

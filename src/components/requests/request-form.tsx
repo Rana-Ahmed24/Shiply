@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
-import { AuthAlert } from "@/components/auth/auth-alert";
 import { FieldError } from "@/components/auth/field-error";
 import { useActionRedirect } from "@/hooks/use-action-redirect";
+import { useActionStateToast } from "@/hooks/use-action-state-toast";
 import {
   createRequestAction,
   updateRequestAction,
@@ -25,6 +25,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhotoFileField } from "@/components/ui/photo-file-field";
+import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { RequestDetail } from "@/types/request";
@@ -68,6 +70,7 @@ export function RequestForm({ request }: RequestFormProps) {
 
   const [state, formAction] = useActionState(action, {});
   useActionRedirect(state.redirectTo);
+  useActionStateToast(state, { errorTitle: "Could not save request" });
 
   const mountKey = requestFormMountKey(request, state.formKey);
   const initial = useMemo(
@@ -96,8 +99,6 @@ export function RequestForm({ request }: RequestFormProps) {
 
   return (
     <form action={formAction} className="space-y-8" noValidate>
-      {state.error && <AuthAlert>{state.error}</AuthAlert>}
-
       {isEdit && (
         <input type="hidden" name="keepExistingImages" value="true" />
       )}
@@ -228,12 +229,12 @@ export function RequestForm({ request }: RequestFormProps) {
             ? " (Re-select files after an error — browsers cannot keep them.)"
             : ""}
         </p>
-        <Input
+        <PhotoFileField
+          id="request-images"
           name="images"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
           multiple
-          className="rounded-2xl"
+          buttonLabel="Choose photos"
+          emptyLabel="No file chosen"
         />
       </section>
 
@@ -242,20 +243,23 @@ export function RequestForm({ request }: RequestFormProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="preferredOriginCountry">Country</Label>
-            <Select
+            <SearchableCombobox
               id="preferredOriginCountry"
               name="preferredOriginCountry"
               value={values.preferredOriginCountry}
-              onChange={set("preferredOriginCountry")}
-              className="rounded-2xl"
-            >
-              <option value="">Any country</option>
-              {DEPARTURE_COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.flag} {c.name}
-                </option>
-              ))}
-            </Select>
+              onValueChange={(v) =>
+                setValues((prev) => ({ ...prev, preferredOriginCountry: v }))
+              }
+              options={[
+                { value: "", label: "Any country" },
+                ...DEPARTURE_COUNTRIES.map((c) => ({
+                  value: c.code,
+                  label: `${c.flag} ${c.name}`,
+                })),
+              ]}
+              placeholder="Any country"
+              searchPlaceholder="Search countries…"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="preferredOriginCity">City</Label>

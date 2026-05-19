@@ -372,7 +372,7 @@ export async function cancelRequestAction(requestId: string) {
   revalidatePath("/dashboard");
   revalidatePath(`/requests/${requestId}`);
 
-  redirect("/requests?message=cancelled");
+  redirect("/requests?message=request_cancelled");
 }
 
 export async function deleteRequestAction(requestId: string) {
@@ -415,5 +415,5 @@ export async function deleteRequestAction(requestId: string) {
   revalidatePath("/dashboard");
   revalidatePath("/");
 
-  redirect("/requests?message=deleted");
+  redirect("/requests?message=request_deleted");
 }

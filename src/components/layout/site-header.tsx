@@ -64,15 +64,14 @@ export async function SiteHeader() {
     </>
   );
 
-  const userNav =
-    session && mode ? (
-      <UserNav
-        userId={session.user.id}
-        email={session.user.email ?? ""}
-        fullName={session.profile?.full_name}
-        appMode={mode}
-      />
-    ) : null;
+  const userNav = session ? (
+    <UserNav
+      userId={session.user.id}
+      email={session.user.email ?? ""}
+      fullName={session.profile?.full_name}
+      roles={session.profile?.roles}
+    />
+  ) : null;
 
   const modeToggle = session ? (
     <ModeToggle mode={mode!} />

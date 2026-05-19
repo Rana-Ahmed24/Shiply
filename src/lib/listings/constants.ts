@@ -37,43 +37,16 @@ export const SERVICE_TYPE_OPTIONS = [
   { value: "ship_only", label: "Ship only" },
 ] as const;
 
-export const DEPARTURE_COUNTRIES = [
-  { code: "US", name: "United States", flag: "🇺🇸" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-  { code: "AE", name: "United Arab Emirates", flag: "🇦🇪" },
-  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" },
-  { code: "DE", name: "Germany", flag: "🇩🇪" },
-  { code: "FR", name: "France", flag: "🇫🇷" },
-  { code: "IT", name: "Italy", flag: "🇮🇹" },
-  { code: "TR", name: "Turkey", flag: "🇹🇷" },
-  { code: "QA", name: "Qatar", flag: "🇶🇦" },
-  { code: "KW", name: "Kuwait", flag: "🇰🇼" },
-] as const;
+import { countryFlagEmoji, WORLD_COUNTRIES } from "@/lib/geo/countries";
+import { EGYPT_ARRIVAL_CITIES } from "@/lib/geo/cities";
 
-export const ARRIVAL_CITIES = [
-  "Cairo",
-  "Alexandria",
-  "Giza",
-  "Hurghada",
-  "Sharm El Sheikh",
-] as const;
+/** All supported countries, sorted A–Z */
+export const DEPARTURE_COUNTRIES = WORLD_COUNTRIES;
 
-export const COUNTRY_FLAGS: Record<string, string> = {
-  US: "🇺🇸",
-  GB: "🇬🇧",
-  AE: "🇦🇪",
-  SA: "🇸🇦",
-  DE: "🇩🇪",
-  FR: "🇫🇷",
-  IT: "🇮🇹",
-  TR: "🇹🇷",
-  QA: "🇶🇦",
-  KW: "🇰🇼",
-  EG: "🇪🇬",
-};
+export const ARRIVAL_CITIES = EGYPT_ARRIVAL_CITIES;
 
 export function countryFlag(code: string): string {
-  return COUNTRY_FLAGS[code.toUpperCase()] ?? "🌍";
+  return countryFlagEmoji(code);
 }
 
 export function countryName(code: string): string {

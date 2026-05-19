@@ -55,6 +55,11 @@ export function RequestCard({ request, className }: RequestCardProps) {
           <Badge variant="outline" className="rounded-full">
             {request.urgencyLabel}
           </Badge>
+          {request.neededBy && (
+            <Badge variant="outline" className="rounded-full">
+              Need by {request.neededBy}
+            </Badge>
+          )}
           {request.budgetLabel && (
             <span className="font-medium text-brand-gold">
               {request.budgetLabel}

@@ -49,10 +49,7 @@ export async function updateProfileAction(
   revalidatePath(`/profile/${user.id}`);
   revalidatePath("/settings");
   revalidatePath("/");
-  return {
-    success:
-      "Your profile has been updated. Your name, bio, and preferences are saved.",
-  };
+  return { redirectTo: "/home?message=profile_updated" };
 }
 
 export async function uploadAvatarAction(
