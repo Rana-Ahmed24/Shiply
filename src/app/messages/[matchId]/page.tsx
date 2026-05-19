@@ -1,13 +1,15 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { ChatRoom } from "@/components/messages/chat-room";
+import { MessagesInbox } from "@/components/messages/messages-inbox";
 import { Container } from "@/components/layout/container";
-import { MatchChat } from "@/components/messages/match-chat";
-import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/server";
-import { getMatchHomeItem } from "@/lib/matching/queries";
-import { getMatchMessages } from "@/lib/messages/queries";
-import { cn } from "@/lib/utils";
+import {
+  getConversationMeta,
+  getConversationsForUser,
+  getMatchMessages,
+  markMatchMessagesRead,
+} from "@/lib/messages/queries";
 
 type MatchChatPageProps = {
   params: Promise<{ matchId: string }>;
@@ -17,38 +19,47 @@ export default async function MatchChatPage({ params }: MatchChatPageProps) {
   const { matchId } = await params;
   const session = await getSession();
   if (!session) {
-    redirect(`/login?next=/messages/${matchId}`);
+    redirect(`/login?redirectTo=${encodeURIComponent(`/messages/${matchId}`)}`);
   }
 
-  const match = await getMatchHomeItem(matchId, session.user.id);
-  if (!match) {
+  const meta = await getConversationMeta(matchId, session.user.id);
+  if (!meta) {
     notFound();
   }
 
-  const messages = await getMatchMessages(matchId);
+  const [messages, conversations] = await Promise.all([
+    getMatchMessages(matchId, session.user.id),
+    getConversationsForUser(session.user.id),
+  ]);
+
+  await markMatchMessagesRead(matchId, session.user.id);
 
   return (
-    <Container className="flex max-w-2xl flex-col gap-6 py-8 pb-24 md:py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">{match.requestTitle}</h1>
-          <p className="text-sm text-muted-foreground">
-            Chat with {match.counterpartyName ?? "your match"}
-          </p>
-        </div>
-        <Link
-          href={match.href}
-          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "rounded-xl")}
-        >
-          Match details
-        </Link>
+    <Container className="py-6 pb-24 md:py-8 md:pb-12">
+      <div className="hidden md:mb-6 md:block">
+        <h1 className="text-display text-3xl">Messages</h1>
       </div>
 
-      <MatchChat
-        matchId={matchId}
-        userId={session.user.id}
-        initialMessages={messages}
-      />
+      <div className="grid gap-6 md:grid-cols-[minmax(0,22rem)_1fr] md:gap-8 lg:grid-cols-[minmax(0,24rem)_1fr]">
+        <div className="hidden md:block">
+          <MessagesInbox
+            conversations={conversations}
+            activeMatchId={matchId}
+          />
+        </div>
+
+        <ChatRoom
+          matchId={matchId}
+          userId={session.user.id}
+          otherUserId={meta.counterpartyId}
+          meta={{
+            title: meta.title,
+            counterpartyName: meta.counterpartyName,
+            counterpartyAvatarUrl: meta.counterpartyAvatarUrl,
+          }}
+          initialMessages={messages}
+        />
+      </div>
     </Container>
   );
 }

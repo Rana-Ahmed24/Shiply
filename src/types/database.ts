@@ -337,7 +337,9 @@ export type Database = {
           match_id: string;
           sender_id: string;
           body: string;
+          attachment_paths: string[];
           is_system: boolean;
+          edited_at: string | null;
           created_at: string;
           deleted_at: string | null;
         };
@@ -345,7 +347,22 @@ export type Database = {
           match_id: string;
           sender_id: string;
           body: string;
+          attachment_paths?: string[];
           is_system?: boolean;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      message_reads: {
+        Row: {
+          message_id: string;
+          user_id: string;
+          read_at: string;
+        };
+        Insert: {
+          message_id: string;
+          user_id: string;
+          read_at?: string;
         };
         Update: Record<string, unknown>;
         Relationships: [];
