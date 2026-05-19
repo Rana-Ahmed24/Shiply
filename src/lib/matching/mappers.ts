@@ -38,6 +38,9 @@ export function mapMatchToCard(
   const isRecipient =
     (row.customer_id === viewerId || row.traveler_id === viewerId) &&
     !isInitiator;
+  const isPending = row.status === "pending";
+  const isTraveler = row.traveler_id === viewerId;
+  const isCustomer = row.customer_id === viewerId;
 
   return {
     id: row.id,
@@ -51,8 +54,9 @@ export function mapMatchToCard(
     counterpartyName: meta.counterpartyName,
     isInitiator,
     createdAt: row.created_at,
-    canAccept: row.status === "pending" && isRecipient,
-    canReject: row.status === "pending",
+    canAccept: isPending && isRecipient,
+    canReject: isPending && isTraveler && !isInitiator,
+    canCancel: isPending && isCustomer && isInitiator,
     canComplete:
       row.status === "accepted" &&
       (row.traveler_id === viewerId || row.customer_id === viewerId),

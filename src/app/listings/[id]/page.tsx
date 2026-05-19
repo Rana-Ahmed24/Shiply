@@ -166,7 +166,10 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
           </Link>
 
           {isCustomer && !ownsListing && (
-            <section className="mt-6 border-t border-border/60 pt-6">
+            <section
+              id="request-delivery"
+              className="mt-6 border-t border-border/60 pt-6"
+            >
               <h3 className="font-semibold">Request delivery</h3>
               <p className="mt-1 text-xs text-muted-foreground">
                 Link one of your open requests to this trip. We check route, dates,

@@ -73,7 +73,7 @@ export function ListingBrowseCard({ listing, className }: ListingBrowseCardProps
       </div>
 
       <Link
-        href={listing.href}
+        href={`${listing.href}#request-delivery`}
         className={cn(
           buttonVariants({ size: "sm" }),
           "mt-4 w-full rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"

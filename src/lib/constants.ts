@@ -13,6 +13,14 @@ export const NAV_LINKS = [
   { href: "/trust", label: "Trust & safety" },
 ] as const;
 
+/** Shown in site header when the user is signed in */
+export const AUTH_NAV_LINKS = [
+  { href: "/home", label: "Home" },
+  { href: "/matches", label: "Matches" },
+  { href: "/travelers", label: "Find travelers" },
+  { href: "/requests", label: "Requests" },
+] as const;
+
 export const FOOTER_LINKS = {
   product: [
     { href: "/travelers", label: "Browse travelers" },

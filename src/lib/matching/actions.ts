@@ -23,6 +23,24 @@ function feeFromPrice(price: number): number {
   return Math.round(price * PLATFORM_FEE_RATE * 100) / 100;
 }
 
+function returnPath(formData: FormData, fallback: string): string {
+  const raw = String(formData.get("returnTo") ?? "").trim();
+  if (raw.startsWith("/") && !raw.startsWith("//")) {
+    return raw.split("?")[0] ?? fallback;
+  }
+  return fallback;
+}
+
+function redirectWithToast(path: string, toast: string) {
+  const sep = path.includes("?") ? "&" : "?";
+  redirect(`${path}${sep}toast=${toast}`);
+}
+
+function matchesListPath(formData: FormData): string {
+  const tab = String(formData.get("returnTab") ?? "sent");
+  return tab === "incoming" ? "/matches?tab=incoming" : "/matches?tab=sent";
+}
+
 async function loadPair(listingId: string, requestId: string) {
   const [listing, request] = await Promise.all([
     fetchListingForMatch(listingId),
@@ -124,9 +142,15 @@ export async function createMatchAction(
     matchId: match.id,
   });
 
+  revalidatePath("/home");
   revalidatePath("/matches");
   revalidatePath(`/listings/${listingId}`);
   revalidatePath(`/requests/${requestId}`);
+
+  const dest = returnPath(formData, "/home");
+  if (dest === "/home") {
+    redirectWithToast("/home", "match_sent");
+  }
   redirect(`/matches/${match.id}?message=match_requested`);
 }
 
@@ -183,8 +207,17 @@ export async function acceptMatchAction(
     matchId,
   });
 
+  revalidatePath("/home");
   revalidatePath("/matches");
   revalidatePath(`/matches/${matchId}`);
+
+  const dest = returnPath(formData, "/matches");
+  if (dest === "/home") {
+    redirectWithToast("/home", "match_accepted");
+  }
+  if (dest === "/matches") {
+    redirectWithToast(matchesListPath(formData), "match_accepted");
+  }
   redirect(`/matches/${matchId}?message=match_accepted`);
 }
 
@@ -239,8 +272,79 @@ export async function rejectMatchAction(
     matchId,
   });
 
+  revalidatePath("/home");
   revalidatePath("/matches");
+
+  const dest = returnPath(formData, "/matches");
+  if (dest === "/home") {
+    redirectWithToast("/home", "match_rejected");
+  }
+  if (dest === "/matches") {
+    redirectWithToast(matchesListPath(formData), "match_rejected");
+  }
   redirect("/matches?message=match_rejected");
+}
+
+export async function cancelMatchAction(
+  _prev: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const user = await requireUser();
+  const matchId = String(formData.get("matchId") ?? "");
+
+  const supabase = await createClient();
+  const { data: match, error: fetchError } = await supabase
+    .from("delivery_matches")
+    .select(
+      "id, status, initiated_by, traveler_id, customer_id, request_id"
+    )
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (fetchError || !match) {
+    return { error: "Match not found." };
+  }
+
+  if (match.customer_id !== user.id) {
+    return { error: "Only the customer can cancel this request." };
+  }
+
+  if (match.initiated_by !== user.id) {
+    return { error: "You can only cancel requests you sent." };
+  }
+
+  if (match.status !== "pending") {
+    return { error: "Only pending requests can be cancelled." };
+  }
+
+  const { error: updateError } = await updateMatchById(supabase, matchId, {
+    status: "cancelled",
+    cancelled_at: new Date().toISOString(),
+    cancellation_reason: "Cancelled by customer",
+  });
+
+  if (updateError) {
+    return { error: mapAuthError(updateError) };
+  }
+
+  await notifyMatchUpdate({
+    userId: match.traveler_id,
+    title: "Request cancelled",
+    body: "The customer cancelled their delivery request.",
+    matchId,
+  });
+
+  revalidatePath("/home");
+  revalidatePath("/matches");
+
+  const dest = returnPath(formData, "/matches");
+  if (dest === "/home") {
+    redirectWithToast("/home", "match_cancelled");
+  }
+  if (dest === "/matches") {
+    redirectWithToast(matchesListPath(formData), "match_cancelled");
+  }
+  redirect("/matches?tab=sent&message=match_rejected");
 }
 
 export async function completeMatchAction(

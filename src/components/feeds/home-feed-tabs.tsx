@@ -20,14 +20,14 @@ const FEED_META: Record<
   { title: string; emptyTitle: string; emptyHint: string; ctaHref: string; ctaLabel: string }
 > = {
   travelers: {
-    title: "Available travelers",
+    title: "Available Travelers",
     emptyTitle: "No traveler listings available yet",
     emptyHint: "List your upcoming trip or check again later.",
     ctaHref: "/listings/new",
     ctaLabel: "List a trip",
   },
   requests: {
-    title: "Delivery requests",
+    title: "Delivery Requests",
     emptyTitle: "No delivery requests available yet",
     emptyHint: "Create a request or check again later.",
     ctaHref: "/requests/new",

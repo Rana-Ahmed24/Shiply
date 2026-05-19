@@ -5,6 +5,7 @@ import { SiteHeaderClient } from "@/components/layout/site-header-client";
 import { AppModeHydrator } from "@/components/mode/app-mode-hydrator";
 import { ModeToggle } from "@/components/mode/mode-toggle";
 import { buttonVariants } from "@/components/ui/button";
+import { AUTH_NAV_LINKS, NAV_LINKS } from "@/lib/constants";
 import { getSession } from "@/lib/auth/server";
 import type { AppMode } from "@/lib/mode/constants";
 import { getAppMode } from "@/lib/mode/server";
@@ -85,6 +86,7 @@ export async function SiteHeader() {
         desktopAuth={session ? userNav : loggedOutDesktop}
         mobileAuth={session ? userNav : loggedOutMobile}
         modeToggle={modeToggle}
+        navLinks={session ? AUTH_NAV_LINKS : NAV_LINKS}
       />
     </>
   );

@@ -11,6 +11,7 @@ import { isMissingColumnError } from "@/lib/profile/db";
 import { LISTING_SELECT_BASE } from "@/lib/listings/db";
 import { createClient } from "@/lib/supabase/server";
 import type { CompatibilityResult } from "@/types/match";
+import type { HomeMatchItem } from "@/types/home-match";
 import type { MatchCardModel, MatchDetailModel } from "@/types/match";
 
 async function isTravelerVerified(
@@ -109,10 +110,21 @@ export async function getMatchByRequestId(
   return (data as MatchRowRaw | null) ?? null;
 }
 
+function formatPickup(
+  city: string | null,
+  country: string | null
+): string {
+  if (city && country) return `${city}, ${country}`;
+  if (country) return country;
+  if (city) return city;
+  return "Any origin";
+}
+
 async function enrichMatchMeta(
   rows: MatchRowRaw[],
-  viewerId: string
-): Promise<MatchCardModel[]> {
+  viewerId: string,
+  options?: { homeDetail?: boolean }
+): Promise<MatchCardModel[] | HomeMatchItem[]> {
   if (rows.length === 0) return [];
 
   const supabase = await createClient();
@@ -126,6 +138,10 @@ async function enrichMatchMeta(
     );
   });
 
+  const requestSelect = options?.homeDetail
+    ? "id, title, preferred_origin_country_code, preferred_origin_city"
+    : "id, title";
+
   const [listingsRes, requestsRes, profilesRes] = await Promise.all([
     supabase
       .from("traveler_listings")
@@ -133,18 +149,38 @@ async function enrichMatchMeta(
         "id, origin_city, origin_country_code, destination_city, destination_country_code"
       )
       .in("id", listingIds),
-    supabase.from("customer_requests").select("id, title").in("id", requestIds),
+    supabase.from("customer_requests").select(requestSelect).in("id", requestIds),
     supabase.from("profiles").select("id, full_name").in("id", [...profileIds]),
   ]);
 
+  type ListingRow = {
+    id: string;
+    origin_city: string;
+    destination_city: string;
+    destination_country_code: string;
+  };
+
+  type RequestRow = {
+    id: string;
+    title: string;
+    preferred_origin_country_code?: string | null;
+    preferred_origin_city?: string | null;
+  };
+
   const listingMap = new Map(
-    (listingsRes.data ?? []).map((l) => [
-      l.id as string,
+    (listingsRes.data as ListingRow[] | null ?? []).map((l) => [
+      l.id,
       `${l.origin_city} → ${l.destination_city}`,
     ])
   );
+  const listingDetailMap = new Map(
+    (listingsRes.data as ListingRow[] | null ?? []).map((l) => [l.id, l])
+  );
   const requestMap = new Map(
-    (requestsRes.data ?? []).map((r) => [r.id as string, r.title as string])
+    (requestsRes.data as RequestRow[] | null ?? []).map((r) => [r.id, r.title])
+  );
+  const requestDetailMap = new Map(
+    (requestsRes.data as RequestRow[] | null ?? []).map((r) => [r.id, r])
   );
   const profileMap = new Map(
     (profilesRes.data ?? []).map((p) => [p.id as string, p.full_name as string | null])
@@ -153,12 +189,112 @@ async function enrichMatchMeta(
   return rows.map((row) => {
     const counterpartyId =
       row.traveler_id === viewerId ? row.customer_id : row.traveler_id;
-    return mapMatchToCard(row, viewerId, {
+    const card = mapMatchToCard(row, viewerId, {
       listingRoute: listingMap.get(row.listing_id) ?? "Trip",
       requestTitle: requestMap.get(row.request_id) ?? "Request",
       counterpartyName: profileMap.get(counterpartyId) ?? null,
     });
+
+    if (!options?.homeDetail) {
+      return card;
+    }
+
+    const listing = listingDetailMap.get(row.listing_id);
+    const request = requestDetailMap.get(row.request_id);
+    const pickupLabel = formatPickup(
+      request?.preferred_origin_city ?? null,
+      request?.preferred_origin_country_code ?? null
+    );
+    const destinationLabel = listing
+      ? `${listing.destination_city}${listing.destination_country_code ? `, ${listing.destination_country_code}` : ""}`
+      : "Egypt";
+
+    return {
+      ...card,
+      pickupLabel,
+      destinationLabel,
+    } satisfies HomeMatchItem;
   });
+}
+
+const HOME_MATCH_LIMIT = 12;
+
+export async function getIncomingMatchesForTraveler(
+  travelerId: string
+): Promise<HomeMatchItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("delivery_matches")
+    .select(MATCH_SELECT)
+    .eq("traveler_id", travelerId)
+    .eq("status", "pending")
+    .neq("initiated_by", travelerId)
+    .order("created_at", { ascending: false })
+    .limit(HOME_MATCH_LIMIT);
+
+  if (error) {
+    console.error("[matching] getIncomingMatchesForTraveler:", error.message);
+    return [];
+  }
+
+  return (await enrichMatchMeta((data ?? []) as MatchRowRaw[], travelerId, {
+    homeDetail: true,
+  })) as HomeMatchItem[];
+}
+
+export async function getSentMatchesForCustomer(
+  customerId: string
+): Promise<HomeMatchItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("delivery_matches")
+    .select(MATCH_SELECT)
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false })
+    .limit(HOME_MATCH_LIMIT);
+
+  if (error) {
+    console.error("[matching] getSentMatchesForCustomer:", error.message);
+    return [];
+  }
+
+  return (await enrichMatchMeta((data ?? []) as MatchRowRaw[], customerId, {
+    homeDetail: true,
+  })) as HomeMatchItem[];
+}
+
+export async function countPendingIncomingForTraveler(
+  travelerId: string
+): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("delivery_matches")
+    .select("id", { count: "exact", head: true })
+    .eq("traveler_id", travelerId)
+    .eq("status", "pending")
+    .neq("initiated_by", travelerId);
+
+  if (error) {
+    console.error("[matching] countPendingIncoming:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function countSentMatchesForCustomer(
+  customerId: string
+): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("delivery_matches")
+    .select("id", { count: "exact", head: true })
+    .eq("customer_id", customerId);
+
+  if (error) {
+    console.error("[matching] countSentMatches:", error.message);
+    return 0;
+  }
+  return count ?? 0;
 }
 
 export async function getMatchesForUser(
@@ -177,7 +313,7 @@ export async function getMatchesForUser(
     return [];
   }
 
-  return enrichMatchMeta((data ?? []) as MatchRowRaw[], userId);
+  return await enrichMatchMeta((data ?? []) as MatchRowRaw[], userId);
 }
 
 export async function getMatchById(

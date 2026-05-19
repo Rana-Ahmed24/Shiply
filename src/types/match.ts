@@ -74,6 +74,7 @@ export type MatchCardModel = {
   createdAt: string;
   canAccept: boolean;
   canReject: boolean;
+  canCancel: boolean;
   canComplete: boolean;
 };
 

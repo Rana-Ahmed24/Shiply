@@ -18,11 +18,14 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+type NavLink = { href: string; label: string };
+
 type SiteHeaderClientProps = {
   logoHref?: string;
   desktopAuth: React.ReactNode;
   mobileAuth: React.ReactNode;
   modeToggle?: React.ReactNode;
+  navLinks?: readonly NavLink[];
 };
 
 export function SiteHeaderClient({
@@ -30,6 +33,7 @@ export function SiteHeaderClient({
   desktopAuth,
   mobileAuth,
   modeToggle,
+  navLinks = NAV_LINKS,
 }: SiteHeaderClientProps) {
   const [open, setOpen] = useState(false);
 
@@ -40,7 +44,7 @@ export function SiteHeaderClient({
           <Logo href={logoHref} />
 
           <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -73,7 +77,7 @@ export function SiteHeaderClient({
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-4" aria-label="Mobile">
-                  {NAV_LINKS.map((link) => (
+                  {navLinks.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
