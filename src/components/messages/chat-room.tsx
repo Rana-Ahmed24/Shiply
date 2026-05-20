@@ -10,6 +10,7 @@ import { TypingIndicator } from "@/components/messages/typing-indicator";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { useChatChannel } from "@/hooks/use-chat-channel";
 import { markChatReadAction } from "@/lib/messages/actions";
+import { dispatchMessagesUnreadChanged } from "@/lib/messages/unread-events";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types/chat";
 
@@ -50,8 +51,9 @@ export function ChatRoom({
   const prevCountRef = useRef(initialMessages.length);
   const initialScrollDone = useRef(false);
 
-  const onMarkRead = useCallback(() => {
-    void markChatReadAction(matchId);
+  const onMarkRead = useCallback(async () => {
+    await markChatReadAction(matchId);
+    dispatchMessagesUnreadChanged();
   }, [matchId]);
 
   const { messages, otherTyping, broadcastTyping } = useChatChannel({

@@ -121,3 +121,4 @@ export async function markChatReadAction(matchId: string): Promise<void> {
   revalidatePath("/messages");
   revalidatePath(`/messages/${matchId}`);
 }
+

@@ -14,7 +14,13 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="size-9 rounded-2xl" aria-hidden />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-9 rounded-2xl text-muted-foreground"
+        aria-label="Toggle theme"
+        suppressHydrationWarning
+      />
     );
   }
 

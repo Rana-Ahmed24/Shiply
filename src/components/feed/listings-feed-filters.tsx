@@ -61,7 +61,7 @@ export function ListingsFeedFilters({
     startTransition(() => {
       const qs = params.toString();
       const path = qs ? `${basePath}?${qs}` : basePath;
-      router.push(path);
+      router.push(path, { scroll: false });
     });
   }
 
@@ -240,7 +240,7 @@ export function ListingsFeedFilters({
               setDestination("");
               setCategory("");
               setService("");
-              startTransition(() => router.push(basePath));
+              startTransition(() => router.push(basePath, { scroll: false }));
             }}
           >
             Reset

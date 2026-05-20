@@ -84,7 +84,7 @@ export function RequestFeedCard({
           {isOwner ? (
             <OwnershipDisabledCta
               label="Your request"
-              tooltip="You cannot accept your own request"
+              tooltip="You cannot send an offer on your own request"
               block={false}
             />
           ) : (

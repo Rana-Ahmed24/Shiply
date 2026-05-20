@@ -60,7 +60,7 @@ export function RequestsFeedFilters({
     });
     startTransition(() => {
       const qs = params.toString();
-      router.push(qs ? `${basePath}?${qs}` : basePath);
+      router.push(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     });
   }
 
@@ -87,7 +87,7 @@ export function RequestsFeedFilters({
     );
     startTransition(() => {
       const qs = params.toString();
-      router.push(qs ? `${basePath}?${qs}` : basePath);
+      router.push(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     });
   }
 

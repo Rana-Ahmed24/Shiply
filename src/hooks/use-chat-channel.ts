@@ -82,22 +82,50 @@ export function useChatChannel({
       initialMessages.map((init) => {
         const existing = prev.find((m) => m.id === init.id);
         return existing
-          ? { ...init, readByOther: existing.readByOther || init.readByOther }
+          ? { ...init, readByOther: init.readByOther || existing.readByOther }
           : init;
       })
     );
   }, [initialMessages]);
 
+  const syncReadReceiptsFromServer = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/messages/${matchId}/read-receipts`, {
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { readMessageIds?: string[] };
+      const readSet = new Set(data.readMessageIds ?? []);
+      if (readSet.size === 0) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.isOwn && readSet.has(m.id) ? { ...m, readByOther: true } : m
+        )
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [matchId]);
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       await onMarkRead();
-      if (!cancelled) broadcastReadReceipts();
+      if (!cancelled) {
+        broadcastReadReceipts();
+        await syncReadReceiptsFromServer();
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [matchId, onMarkRead, broadcastReadReceipts]);
+  }, [matchId, onMarkRead, broadcastReadReceipts, syncReadReceiptsFromServer]);
+
+  useEffect(() => {
+    void syncReadReceiptsFromServer();
+    const interval = setInterval(() => void syncReadReceiptsFromServer(), 8_000);
+    return () => clearInterval(interval);
+  }, [syncReadReceiptsFromServer]);
 
   useEffect(() => {
     const supabase = createClientIfConfigured();

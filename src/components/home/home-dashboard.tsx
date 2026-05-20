@@ -64,7 +64,13 @@ async function RequestFeedResults({
   );
 }
 
-async function TravelerFeedResults({ params }: { params: ListingsSearchParams }) {
+async function TravelerFeedResults({
+  params,
+  userId,
+}: {
+  params: ListingsSearchParams;
+  userId: string;
+}) {
   const result = await searchListings(params);
   const listings = result.listings;
 
@@ -84,7 +90,11 @@ async function TravelerFeedResults({ params }: { params: ListingsSearchParams })
       </p>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {listings.map((listing) => (
-          <TravelerFeedCard key={listing.id} listing={listing} />
+          <TravelerFeedCard
+            key={listing.id}
+            listing={listing}
+            currentUserId={userId}
+          />
         ))}
       </div>
     </>
@@ -142,7 +152,7 @@ export function HomeDashboard({
           key={JSON.stringify(listingsParams)}
           fallback={<ListingGridSkeleton count={6} />}
         >
-          <TravelerFeedResults params={listingsParams} />
+          <TravelerFeedResults params={listingsParams} userId={userId} />
         </Suspense>
       </section>
 

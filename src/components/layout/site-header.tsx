@@ -2,25 +2,22 @@ import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 
 import { UserNav } from "@/components/auth/user-nav";
-import { MessagesNavLink } from "@/components/navigation/messages-nav-link";
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
-import { getTotalUnreadMessageCount } from "@/lib/messages/queries";
+import { MessagesNavLink } from "@/components/navigation/messages-nav-link";
 import { AppModeHydrator } from "@/components/mode/app-mode-hydrator";
 import { buttonVariants } from "@/components/ui/button";
 import { AUTH_NAV_LINKS, NAV_LINKS } from "@/lib/constants";
-import { getSession } from "@/lib/auth/server";
+import type { AuthSession } from "@/lib/auth/session";
 import type { AppMode } from "@/lib/mode/constants";
-import { getAppMode } from "@/lib/mode/server";
 import { cn } from "@/lib/utils";
 
-export async function SiteHeader() {
-  const session = await getSession();
-  const mode = session
-    ? await getAppMode(
-        (session.profile?.preferred_mode as AppMode | undefined) ?? "customer"
-      )
-    : null;
+type SiteHeaderProps = {
+  session: AuthSession | null;
+  mode: AppMode | null;
+};
 
+/** Sync header shell — session/mode resolved in MainLayout to avoid suspend/hydration gaps. */
+export function SiteHeader({ session, mode }: SiteHeaderProps) {
   const loggedOutDesktop = (
     <>
       <Link
@@ -67,13 +64,9 @@ export async function SiteHeader() {
     </>
   );
 
-  const unreadMessages = session
-    ? await getTotalUnreadMessageCount(session.user.id)
-    : 0;
-
   const signedInActions = session ? (
     <>
-      <MessagesNavLink unreadCount={unreadMessages} className="hidden sm:inline-flex" />
+      <MessagesNavLink className="hidden sm:inline-flex" />
       <UserNav
         userId={session.user.id}
         email={session.user.email ?? ""}
@@ -89,16 +82,11 @@ export async function SiteHeader() {
         href="/messages"
         className={cn(
           buttonVariants({ variant: "outline" }),
-          "relative w-full rounded-2xl justify-center gap-2"
+          "relative w-full justify-center gap-2 rounded-2xl"
         )}
       >
         <MessageSquare className="size-4" aria-hidden />
         Messages
-        {unreadMessages > 0 ? (
-          <span className="ml-1 rounded-full bg-brand-teal px-2 py-0.5 text-xs font-semibold text-white">
-            {unreadMessages > 99 ? "99+" : unreadMessages}
-          </span>
-        ) : null}
       </Link>
       <UserNav
         userId={session.user.id}

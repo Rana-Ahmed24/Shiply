@@ -65,7 +65,7 @@ export function ListingsFilters({
     startTransition(() => {
       const listingQs = params.toString();
       const path = listingQs ? `${basePath}?${listingQs}` : basePath;
-      router.push(path);
+      router.push(path, { scroll: false });
     });
   }
 
@@ -87,7 +87,7 @@ export function ListingsFilters({
     );
     startTransition(() => {
       const qs = params.toString();
-      router.push(qs ? `${basePath}?${qs}` : basePath);
+      router.push(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     });
   }
 

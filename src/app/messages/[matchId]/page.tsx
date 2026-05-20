@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { ChatRoom } from "@/components/messages/chat-room";
 import { ChatWindowScroll } from "@/components/messages/chat-window-scroll";
+import { MessagesUnreadSync } from "@/components/messages/messages-unread-sync";
 import { MessagesInbox } from "@/components/messages/messages-inbox";
 import { Container } from "@/components/layout/container";
 import { getSession } from "@/lib/auth/server";
@@ -38,6 +39,7 @@ export default async function MatchChatPage({ params }: MatchChatPageProps) {
   return (
     <Container className="py-4 pb-24 md:py-8 md:pb-12">
       <ChatWindowScroll />
+      <MessagesUnreadSync />
       <div className="hidden md:mb-6 md:block">
         <h1 className="text-display text-3xl">Messages</h1>
       </div>

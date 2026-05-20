@@ -101,10 +101,56 @@ export async function markMatchMessagesRead(
 
   if (toInsert.length === 0) return;
 
-  const { error } = await supabase.from("message_reads").insert(toInsert);
+  const { error } = await supabase.from("message_reads").upsert(toInsert, {
+    onConflict: "message_id,user_id",
+    ignoreDuplicates: true,
+  });
   if (error) {
     console.error("[messages] markMatchMessagesRead:", error.message);
   }
+}
+
+/** Message IDs the viewer sent that the counterparty has read. */
+export async function getReadReceiptsForMatch(
+  matchId: string,
+  viewerId: string
+): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data: match } = await supabase
+    .from("delivery_matches")
+    .select("traveler_id, customer_id")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (!match) return [];
+
+  const otherId =
+    match.traveler_id === viewerId ? match.customer_id : match.traveler_id;
+  if (!otherId) return [];
+
+  const { data: ownMessages } = await supabase
+    .from("messages")
+    .select("id")
+    .eq("match_id", matchId)
+    .eq("sender_id", viewerId)
+    .is("deleted_at", null);
+
+  const ownIds = (ownMessages ?? []).map((m) => m.id as string);
+  if (ownIds.length === 0) return [];
+
+  const { data: reads, error } = await supabase
+    .from("message_reads")
+    .select("message_id")
+    .eq("user_id", otherId)
+    .in("message_id", ownIds);
+
+  if (error) {
+    console.error("[messages] getReadReceiptsForMatch:", error.message);
+    return [];
+  }
+
+  return (reads ?? []).map((r) => r.message_id as string);
 }
 
 export async function getTotalUnreadMessageCount(userId: string): Promise<number> {
