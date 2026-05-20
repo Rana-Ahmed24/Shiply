@@ -66,6 +66,10 @@ function applySearchFilters(
     q = q.eq("origin_country_code", params.origin.toUpperCase());
   }
 
+  if (params.origin_city?.trim()) {
+    q = q.ilike("origin_city", `%${params.origin_city.trim()}%`);
+  }
+
   if (params.destination) {
     q = q.ilike("destination_city", `%${params.destination}%`);
   }

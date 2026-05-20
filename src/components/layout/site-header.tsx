@@ -4,6 +4,7 @@ import Link from "next/link";
 import { UserNav } from "@/components/auth/user-nav";
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
 import { MessagesNavLink } from "@/components/navigation/messages-nav-link";
+import { UnreadMessagesSubscriber } from "@/components/navigation/unread-messages-subscriber";
 import { AppModeHydrator } from "@/components/mode/app-mode-hydrator";
 import { buttonVariants } from "@/components/ui/button";
 import { AUTH_NAV_LINKS, NAV_LINKS } from "@/lib/constants";
@@ -100,6 +101,7 @@ export function SiteHeader({ session, mode }: SiteHeaderProps) {
   return (
     <>
       {session && mode ? <AppModeHydrator mode={mode} /> : null}
+      {session ? <UnreadMessagesSubscriber userId={session.user.id} /> : null}
       <SiteHeaderClient
         logoHref="/"
         desktopAuth={session ? signedInActions : loggedOutDesktop}

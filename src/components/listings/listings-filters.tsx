@@ -3,15 +3,16 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
+import { FilterCombobox } from "@/components/filters/filter-combobox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { EGYPT_CITIES, getCitiesForCountry } from "@/lib/geo/regions";
 import {
-  ARRIVAL_CITIES,
-  DEPARTURE_COUNTRIES,
   LISTING_CATEGORIES,
   LISTING_SORT_OPTIONS,
   SERVICE_TYPE_OPTIONS,
+  DEPARTURE_COUNTRIES,
 } from "@/lib/listings/constants";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ function filtersFromParams(searchParams: URLSearchParams) {
   return {
     q: searchParams.get("q") ?? "",
     origin: searchParams.get("origin") ?? "",
+    origin_city: searchParams.get("origin_city") ?? "",
     destination: searchParams.get("destination") ?? "",
     category: searchParams.get("category") ?? "",
     service: searchParams.get("service") ?? "",
@@ -27,7 +29,6 @@ function filtersFromParams(searchParams: URLSearchParams) {
 }
 
 type ListingsFiltersProps = {
-  /** Where filter navigation applies (e.g. `/travelers` or `/`) */
   basePath?: string;
   className?: string;
 };
@@ -43,22 +44,49 @@ export function ListingsFilters({
 
   const initial = useMemo(
     () => filtersFromParams(searchParams),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- remount when URL filters change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [filterKey]
   );
 
   const [q, setQ] = useState(initial.q);
   const [origin, setOrigin] = useState(initial.origin);
+  const [originCity, setOriginCity] = useState(initial.origin_city);
   const [destination, setDestination] = useState(initial.destination);
   const [category, setCategory] = useState(initial.category);
   const [service, setService] = useState(initial.service);
   const [sort, setSort] = useState(initial.sort);
 
+  const countryOptions = useMemo(
+    () =>
+      DEPARTURE_COUNTRIES.map((c) => ({
+        value: c.code,
+        label: `${c.flag} ${c.name}`,
+      })),
+    []
+  );
+
+  const originCityOptions = useMemo(() => {
+    const cities = origin ? getCitiesForCountry(origin) : [];
+    return cities.map((city) => ({ value: city, label: city }));
+  }, [origin]);
+
+  const egyptCityOptions = useMemo(
+    () => EGYPT_CITIES.map((city) => ({ value: city, label: city })),
+    []
+  );
+
   function applyFilters(values: ReturnType<typeof filtersFromParams>) {
     const params = new URLSearchParams(searchParams.toString());
-    ["q", "origin", "destination", "category", "service", "sort", "page"].forEach(
-      (key) => params.delete(key)
-    );
+    [
+      "q",
+      "origin",
+      "origin_city",
+      "destination",
+      "category",
+      "service",
+      "sort",
+      "page",
+    ].forEach((key) => params.delete(key));
     Object.entries(values).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
@@ -71,24 +99,48 @@ export function ListingsFilters({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    applyFilters({ q, origin, destination, category, service, sort });
+    applyFilters({
+      q,
+      origin,
+      origin_city: originCity,
+      destination,
+      category,
+      service,
+      sort,
+    });
   }
 
   function handleReset() {
     setQ("");
     setOrigin("");
+    setOriginCity("");
     setDestination("");
     setCategory("");
     setService("");
     setSort("arrival_asc");
     const params = new URLSearchParams(searchParams.toString());
-    ["q", "origin", "destination", "category", "service", "sort", "page"].forEach(
-      (key) => params.delete(key)
-    );
+    [
+      "q",
+      "origin",
+      "origin_city",
+      "destination",
+      "category",
+      "service",
+      "sort",
+      "page",
+    ].forEach((key) => params.delete(key));
     startTransition(() => {
       const qs = params.toString();
       router.push(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     });
+  }
+
+  function onOriginChange(code: string) {
+    setOrigin(code);
+    if (originCity && code) {
+      const allowed = getCitiesForCountry(code);
+      if (!allowed.some((c) => c === originCity)) setOriginCity("");
+    }
   }
 
   return (
@@ -108,35 +160,37 @@ export function ListingsFilters({
           onChange={(e) => setQ(e.target.value)}
           className="h-11 rounded-2xl md:col-span-2 lg:col-span-3"
         />
-        <Select
-          name="origin"
+        <FilterCombobox
+          label="Departure country"
           value={origin}
-          onChange={(e) => setOrigin(e.target.value)}
-          className="rounded-2xl"
-        >
-          <option value="">All departure countries</option>
-          {DEPARTURE_COUNTRIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.flag} {c.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          name="destination"
+          onChange={onOriginChange}
+          options={countryOptions}
+          placeholder="Type country (e.g. U for US)…"
+        />
+        <FilterCombobox
+          label="Departure city"
+          value={originCity}
+          onChange={setOriginCity}
+          options={originCityOptions}
+          placeholder={
+            origin
+              ? "Type city in selected country…"
+              : "Select a country first"
+          }
+          disabled={!origin || originCityOptions.length === 0}
+        />
+        <FilterCombobox
+          label="Arrival city in Egypt"
           value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-        >
-          <option value="">All arrival cities</option>
-          {ARRIVAL_CITIES.map((city) => (
-            <option key={city} value={city}>
-              {city}
-            </option>
-          ))}
-        </Select>
+          onChange={setDestination}
+          options={egyptCityOptions}
+          placeholder="Type city (e.g. C for Cairo)…"
+        />
         <Select
           name="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          className="rounded-2xl"
         >
           <option value="">All categories</option>
           {LISTING_CATEGORIES.map((cat) => (
@@ -149,6 +203,7 @@ export function ListingsFilters({
           name="service"
           value={service}
           onChange={(e) => setService(e.target.value)}
+          className="rounded-2xl"
         >
           <option value="">All services</option>
           {SERVICE_TYPE_OPTIONS.map((s) => (

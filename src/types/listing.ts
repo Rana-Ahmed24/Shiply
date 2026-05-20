@@ -84,6 +84,7 @@ export type ListingDetail = ListingCardModel & {
 export type ListingsSearchParams = {
   q?: string;
   origin?: string;
+  origin_city?: string;
   destination?: string;
   category?: string;
   service?: string;

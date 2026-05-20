@@ -9,6 +9,7 @@ export function parseRequestsSearchParams(
     req_category: params.req_category,
     req_urgency: params.req_urgency,
     req_origin: params.req_origin,
+    req_city: params.req_city,
     req_sort: params.req_sort,
   };
 }

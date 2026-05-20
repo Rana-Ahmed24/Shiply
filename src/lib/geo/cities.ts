@@ -1,17 +1,7 @@
-/** Egypt destination cities for traveler listings */
-export const EGYPT_ARRIVAL_CITIES = [
-  "Alexandria",
-  "Aswan",
-  "Cairo",
-  "Giza",
-  "Hurghada",
-  "Luxor",
-  "Mansoura",
-  "Port Said",
-  "Sharm El Sheikh",
-  "Suez",
-  "Tanta",
-] as const;
+import { EGYPT_CITIES } from "@/lib/geo/regions";
+
+/** Egypt destination cities for traveler listings (27 governorates / major cities) */
+export const EGYPT_ARRIVAL_CITIES = EGYPT_CITIES;
 
 /** Common departure cities (searchable); travelers can still type custom cities elsewhere */
 export const MAJOR_DEPARTURE_CITIES = [

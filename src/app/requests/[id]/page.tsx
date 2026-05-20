@@ -47,6 +47,10 @@ export default async function RequestDetailPage({
   const showDangerZone = isOwner;
 
   const existingMatch = await getMatchByRequestId(id);
+  const acceptedMatch =
+    existingMatch &&
+    existingMatch.status !== "pending" &&
+    existingMatch.status !== "cancelled";
   const canOfferDelivery =
     !isOwner &&
     session?.user.id &&
@@ -123,6 +127,35 @@ export default async function RequestDetailPage({
           </div>
         )}
       </div>
+
+      {acceptedMatch && session?.user.id && (
+        <section className="rounded-2xl border border-brand-teal/40 bg-brand-teal/5 p-5">
+          <p className="font-semibold text-foreground">Delivery match accepted</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            This request is linked to an active delivery. Coordinate details in chat.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href={`/messages/${existingMatch.id}`}
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "rounded-xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
+              )}
+            >
+              Open chat
+            </Link>
+            <Link
+              href={`/matches/${existingMatch.id}`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "rounded-xl"
+              )}
+            >
+              Match overview
+            </Link>
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-border/60 p-6">
         <h2 className="font-semibold">Status</h2>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { FileText, MessageCircle, Plane } from "lucide-react";
 
 import { AcceptedMatchDetails } from "@/components/matching/accepted-match-details";
 import { MatchStatusBadge } from "@/components/matching/match-status-badge";
@@ -47,10 +47,24 @@ export function MatchAcceptedCard({ match, className }: MatchAcceptedCardProps) 
           Chat
         </Link>
         <Link
-          href={match.href}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}
+          href={`/requests/${match.requestId}`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "rounded-xl"
+          )}
         >
-          Details
+          <FileText className="mr-1.5 size-4" aria-hidden />
+          View request
+        </Link>
+        <Link
+          href={`/listings/${match.listingId}`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "rounded-xl"
+          )}
+        >
+          <Plane className="mr-1.5 size-4" aria-hidden />
+          View trip
         </Link>
       </div>
     </div>

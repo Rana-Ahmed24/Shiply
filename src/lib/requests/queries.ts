@@ -82,9 +82,47 @@ export async function getRequestById(
     return null;
   }
 
-  return mapRequestToDetail(normalizeRequestRow(row), {
+  const detail = mapRequestToDetail(normalizeRequestRow(row), {
     viewerId,
   });
+
+  return enrichRequestWithMatchStatus(detail);
+}
+
+async function enrichRequestWithMatchStatus(
+  detail: RequestDetail
+): Promise<RequestDetail> {
+  const supabase = await createClient();
+  const { data: match } = await supabase
+    .from("delivery_matches")
+    .select("status")
+    .eq("request_id", detail.id)
+    .in("status", [
+      "accepted",
+      "deposit_pending",
+      "deposit_held",
+      "in_transit",
+      "delivered",
+      "completed",
+    ])
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!match || match.status === "pending" || match.status === "cancelled") {
+    return detail;
+  }
+
+  if (detail.lifecycle === "pending") {
+    return {
+      ...detail,
+      lifecycle: "accepted",
+      lifecycleLabel: "Accepted",
+      status: "matched",
+    };
+  }
+
+  return detail;
 }
 
 function applyRequestSearchFilters(
@@ -107,6 +145,10 @@ function applyRequestSearchFilters(
 
   if (params.req_origin) {
     q = q.eq("preferred_origin_country_code", params.req_origin.toUpperCase());
+  }
+
+  if (params.req_city?.trim()) {
+    q = q.ilike("preferred_origin_city", `%${params.req_city.trim()}%`);
   }
 
   if (params.req_q?.trim()) {

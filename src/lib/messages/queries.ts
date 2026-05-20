@@ -36,33 +36,13 @@ export async function getMatchMessages(
   }
 
   const rows = messages as MessageRow[];
-  const messageIds = rows.map((m) => m.id);
 
-  const { data: reads } = await supabase
-    .from("message_reads")
-    .select("message_id, user_id")
-    .in("message_id", messageIds);
-
-  const readMap = new Map<string, Set<string>>();
-  (reads ?? []).forEach((r) => {
-    const set = readMap.get(r.message_id as string) ?? new Set();
-    set.add(r.user_id as string);
-    readMap.set(r.message_id as string, set);
-  });
-
-  const { data: match } = await supabase
-    .from("delivery_matches")
-    .select("traveler_id, customer_id")
-    .eq("id", matchId)
-    .maybeSingle();
-
-  const otherId =
-    match?.traveler_id === viewerId ? match?.customer_id : match?.traveler_id;
+  const readIds = await getReadReceiptsForMatch(matchId, viewerId);
+  const readSet = new Set(readIds);
 
   return rows.map((row) => {
-    const readers = readMap.get(row.id) ?? new Set();
     const readByOther =
-      row.sender_id === viewerId && otherId ? readers.has(otherId) : false;
+      row.sender_id === viewerId ? readSet.has(row.id) : false;
     return mapMessageRow(row, viewerId, readByOther);
   });
 }
@@ -117,6 +97,25 @@ export async function getReadReceiptsForMatch(
 ): Promise<string[]> {
   const supabase = await createClient();
 
+  const { data, error } = await supabase.rpc("match_read_message_ids", {
+    p_match_id: matchId,
+    p_viewer_id: viewerId,
+  });
+
+  if (error) {
+    console.error("[messages] getReadReceiptsForMatch:", error.message);
+    return fallbackReadReceiptsForMatch(matchId, viewerId);
+  }
+
+  return (data ?? []) as string[];
+}
+
+async function fallbackReadReceiptsForMatch(
+  matchId: string,
+  viewerId: string
+): Promise<string[]> {
+  const supabase = await createClient();
+
   const { data: match } = await supabase
     .from("delivery_matches")
     .select("traveler_id, customer_id")
@@ -146,7 +145,7 @@ export async function getReadReceiptsForMatch(
     .in("message_id", ownIds);
 
   if (error) {
-    console.error("[messages] getReadReceiptsForMatch:", error.message);
+    console.error("[messages] fallbackReadReceipts:", error.message);
     return [];
   }
 

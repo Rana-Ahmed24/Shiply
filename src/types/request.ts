@@ -70,6 +70,7 @@ export type RequestsSearchParams = {
   req_category?: string;
   req_urgency?: string;
   req_origin?: string;
+  req_city?: string;
   req_sort?: string;
 };
 

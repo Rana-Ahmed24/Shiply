@@ -8,6 +8,7 @@ import {
   TYPING_BROADCAST_EVENT,
   TYPING_TIMEOUT_MS,
 } from "@/lib/messages/constants";
+import { dispatchMessagesUnreadChanged } from "@/lib/messages/unread-events";
 import { getChatImagePublicUrl } from "@/lib/messages/urls";
 import { createClientIfConfigured } from "@/lib/supabase/client";
 import type { ChatMessage } from "@/types/chat";
@@ -148,6 +149,8 @@ export function useChatChannel({
           if (row.sender_id !== userId) {
             void onMarkRead();
             broadcastReadReceipts();
+          } else {
+            dispatchMessagesUnreadChanged();
           }
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
