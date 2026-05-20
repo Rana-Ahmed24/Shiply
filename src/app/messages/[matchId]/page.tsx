@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { ChatRoom } from "@/components/messages/chat-room";
+import { ChatWindowScroll } from "@/components/messages/chat-window-scroll";
 import { MessagesInbox } from "@/components/messages/messages-inbox";
 import { Container } from "@/components/layout/container";
 import { getSession } from "@/lib/auth/server";
@@ -35,12 +36,13 @@ export default async function MatchChatPage({ params }: MatchChatPageProps) {
   await markMatchMessagesRead(matchId, session.user.id);
 
   return (
-    <Container className="py-6 pb-24 md:py-8 md:pb-12">
+    <Container className="py-4 pb-24 md:py-8 md:pb-12">
+      <ChatWindowScroll />
       <div className="hidden md:mb-6 md:block">
         <h1 className="text-display text-3xl">Messages</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,22rem)_1fr] md:gap-8 lg:grid-cols-[minmax(0,24rem)_1fr]">
+      <div className="grid items-start gap-6 md:grid-cols-[minmax(0,22rem)_1fr] md:gap-8 lg:grid-cols-[minmax(0,24rem)_1fr]">
         <div className="hidden md:block">
           <MessagesInbox
             conversations={conversations}

@@ -22,4 +22,4 @@ export const AUTH_ROUTE_PREFIXES = [
 export const ONBOARDING_PATH = "/onboarding";
 
 export const DEFAULT_LOGIN_PATH = "/login";
-export const DEFAULT_AUTH_REDIRECT = "/home";
+export const DEFAULT_AUTH_REDIRECT = "/";

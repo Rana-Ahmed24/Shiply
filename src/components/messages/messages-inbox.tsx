@@ -48,6 +48,7 @@ export function MessagesInbox({
           <li key={c.matchId}>
             <Link
               href={c.href}
+              scroll={false}
               className={cn(
                 "flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-card-hover",
                 isActive && "bg-brand-teal/5"

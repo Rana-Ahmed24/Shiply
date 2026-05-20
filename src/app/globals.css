@@ -8,12 +8,15 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-heading: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-display);
   --color-brand-navy: var(--brand-navy);
   --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-light: var(--brand-gold-light);
   --color-brand-teal: var(--brand-teal);
+  --color-brand-teal-light: var(--brand-teal-light);
   --color-brand-surface: var(--brand-surface);
+  --color-brand-muted: var(--brand-muted);
   --color-card-hover: var(--card-hover);
   --color-text-secondary: var(--text-secondary);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -56,92 +59,97 @@
   --shadow-soft-lg: 0 8px 32px -8px rgb(0 0 0 / 0.45);
 }
 
-/* Light theme — readable fallback when system/light is selected */
 :root {
-  --brand-navy: #001628;
-  --brand-gold: #d4af4f;
-  --brand-teal: #3db8b0;
-  --brand-surface: #f4f7fb;
+  --brand-navy: #0a1628;
+  --brand-gold: #c9a84c;
+  --brand-gold-light: #e8c97a;
+  --brand-teal: #1d9e75;
+  --brand-teal-light: #5dcaa5;
+  --brand-surface: #f8f6f1;
+  --brand-muted: #8a9bb8;
   --background: #f4f7fb;
-  --foreground: #001628;
+  --foreground: #0a1628;
   --card: #ffffff;
   --card-hover: #e8eef6;
-  --card-foreground: #001628;
+  --card-foreground: #0a1628;
   --popover: #ffffff;
-  --popover-foreground: #001628;
-  --primary: #d4af4f;
-  --primary-foreground: #001628;
+  --popover-foreground: #0a1628;
+  --primary: #c9a84c;
+  --primary-foreground: #0a1628;
   --secondary: #e8eef6;
-  --secondary-foreground: #001628;
+  --secondary-foreground: #0a1628;
   --muted: #e8eef6;
-  --muted-foreground: rgb(0 22 40 / 0.55);
-  --text-secondary: rgb(0 22 40 / 0.7);
-  --text-muted: rgb(0 22 40 / 0.5);
-  --accent: #3db8b0;
-  --accent-foreground: #001628;
+  --muted-foreground: #5a6b85;
+  --text-secondary: rgb(10 22 40 / 0.7);
+  --text-muted: rgb(10 22 40 / 0.5);
+  --accent: #1d9e75;
+  --accent-foreground: #0a1628;
   --destructive: #dc2626;
-  --border: rgb(0 22 40 / 0.12);
-  --input: rgb(0 22 40 / 0.12);
-  --ring: #3db8b0;
-  --chart-1: #d4af4f;
-  --chart-2: #3db8b0;
+  --border: rgb(10 22 40 / 0.12);
+  --input: rgb(10 22 40 / 0.12);
+  --ring: #c9a84c;
+  --chart-1: #c9a84c;
+  --chart-2: #1d9e75;
   --chart-3: #112240;
   --chart-4: #16304f;
-  --chart-5: #001628;
+  --chart-5: #0a1628;
   --radius: 0.75rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #001628;
-  --sidebar-primary: #d4af4f;
-  --sidebar-primary-foreground: #001628;
+  --sidebar-foreground: #0a1628;
+  --sidebar-primary: #c9a84c;
+  --sidebar-primary-foreground: #0a1628;
   --sidebar-accent: #e8eef6;
-  --sidebar-accent-foreground: #001628;
-  --sidebar-border: rgb(0 22 40 / 0.12);
-  --sidebar-ring: #3db8b0;
+  --sidebar-accent-foreground: #0a1628;
+  --sidebar-border: rgb(10 22 40 / 0.12);
+  --sidebar-ring: #c9a84c;
   --space-section: 5rem;
   --space-container-x: 1rem;
-  --white: #fff;
+  --card-border-gold: rgb(201 168 76 / 0.2);
 }
 
-/* Shiply dark system — default app experience */
 .dark {
-  --brand-navy: #001628;
-  --brand-gold: #d4af4f;
-  --brand-teal: #4ecdc4;
+  --brand-navy: #0a1628;
+  --brand-gold: #c9a84c;
+  --brand-gold-light: #e8c97a;
+  --brand-teal: #1d9e75;
+  --brand-teal-light: #5dcaa5;
   --brand-surface: #112240;
-  --background: #001628;
-  --foreground: #ffffff;
+  --brand-muted: #8a9bb8;
+  --background: #0a1628;
+  --foreground: #f8f6f1;
   --card: #112240;
   --card-hover: #16304f;
-  --card-foreground: #ffffff;
+  --card-foreground: #f8f6f1;
   --popover: #112240;
-  --popover-foreground: #ffffff;
-  --primary: #d4af4f;
-  --primary-foreground: #001628;
-  --secondary: #002038;
-  --secondary-foreground: rgb(255 255 255 / 0.7);
-  --muted: #0a1f38;
-  --muted-foreground: rgb(255 255 255 / 0.5);
+  --popover-foreground: #f8f6f1;
+  --primary: #c9a84c;
+  --primary-foreground: #0a1628;
+  --secondary: rgb(255 255 255 / 0.03);
+  --secondary-foreground: rgb(248 246 241 / 0.7);
+  --muted: rgb(255 255 255 / 0.05);
+  --muted-foreground: #8a9bb8;
   --text-secondary: rgb(255 255 255 / 0.7);
   --text-muted: rgb(255 255 255 / 0.5);
-  --accent: #4ecdc4;
-  --accent-foreground: #001628;
+  --accent: #1d9e75;
+  --accent-foreground: #f8f6f1;
   --destructive: #f87171;
   --border: rgb(255 255 255 / 0.1);
   --input: rgb(255 255 255 / 0.12);
-  --ring: #d4af4f;
-  --chart-1: #d4af4f;
-  --chart-2: #4ecdc4;
+  --ring: #c9a84c;
+  --chart-1: #c9a84c;
+  --chart-2: #1d9e75;
   --chart-3: #112240;
   --chart-4: #16304f;
-  --chart-5: #001628;
+  --chart-5: #0a1628;
   --sidebar: #112240;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #d4af4f;
-  --sidebar-primary-foreground: #001628;
+  --sidebar-foreground: #f8f6f1;
+  --sidebar-primary: #c9a84c;
+  --sidebar-primary-foreground: #0a1628;
   --sidebar-accent: #16304f;
-  --sidebar-accent-foreground: #ffffff;
+  --sidebar-accent-foreground: #f8f6f1;
   --sidebar-border: rgb(255 255 255 / 0.1);
-  --sidebar-ring: #d4af4f;
+  --sidebar-ring: #c9a84c;
+  --card-border-gold: rgb(201 168 76 / 0.2);
 }
 
 @layer base {
@@ -150,35 +158,78 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background font-sans text-foreground antialiased;
   }
 
   html {
-    @apply font-sans scroll-smooth;
+    @apply scroll-smooth;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
   }
 }
 
 @layer utilities {
   .text-display {
-    @apply font-bold leading-[1.1] tracking-tight text-foreground;
-    font-family: var(--font-heading), var(--font-sans), sans-serif;
-    font-size: clamp(1.75rem, 4vw, 3.25rem);
+    @apply font-extrabold leading-[1.1] tracking-tight text-foreground;
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
     margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .text-section-label {
+    @apply text-xs font-medium uppercase tracking-[0.15em] text-brand-gold;
+  }
+
+  .text-section-title {
+    @apply text-[1.75rem] font-bold leading-tight tracking-tight text-foreground;
+    font-family: var(--font-display), var(--font-sans), sans-serif;
   }
 
   .text-secondary {
     color: var(--text-secondary);
   }
 
-  select,
-  select option {
-    background-color: var(--popover);
-    color: var(--popover-foreground);
+  .text-lead {
+    @apply text-base font-light leading-relaxed sm:text-lg;
+    color: var(--text-secondary);
   }
 
-  .text-lead {
-    @apply text-base leading-relaxed sm:text-lg;
-    color: var(--text-secondary);
+  .feed-card {
+    @apply cursor-pointer rounded-2xl border border-border/80 bg-card p-5 shadow-soft transition-[border-color,transform] duration-200;
+  }
+
+  .feed-card:hover {
+    @apply border-brand-gold/30 -translate-y-0.5;
+  }
+
+  .shiply-eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-4 py-1.5 text-xs tracking-wide text-brand-gold-light;
+  }
+
+  .shiply-search-bar {
+    @apply flex flex-wrap items-center gap-2 rounded-xl border border-border/80 bg-muted p-2;
+  }
+
+  .shiply-filter-tab {
+    @apply rounded-full border border-border/80 bg-transparent px-4 py-1.5 text-xs text-brand-muted transition-colors;
+  }
+
+  .shiply-filter-tab-active {
+    @apply border-brand-gold/40 bg-brand-gold/10 text-brand-gold-light;
+  }
+
+  .shiply-tag {
+    @apply rounded-md border border-border/80 bg-muted px-2.5 py-0.5 text-[0.68rem] text-brand-muted;
+  }
+
+  .shiply-tag-verified {
+    @apply border-brand-teal/30 bg-brand-teal/10 text-brand-teal-light;
   }
 
   .shadow-soft {
@@ -191,5 +242,11 @@
 
   .section-y {
     padding-block: var(--space-section);
+  }
+
+  select,
+  select option {
+    background-color: var(--popover);
+    color: var(--popover-foreground);
   }
 }

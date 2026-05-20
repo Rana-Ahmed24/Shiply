@@ -151,14 +151,15 @@ export async function createMatchAction(
     matchId: match.id,
   });
 
+  revalidatePath("/");
   revalidatePath("/home");
   revalidatePath("/matches");
   revalidatePath(`/listings/${listingId}`);
   revalidatePath(`/requests/${requestId}`);
 
-  const dest = returnPath(formData, "/home");
-  if (dest === "/home") {
-    redirectWithToast("/home", "match_sent");
+  const dest = returnPath(formData, "/");
+  if (dest === "/" || dest === "/home") {
+    redirectWithToast("/?toast=match_sent", "match_sent");
   }
   redirect(`/matches/${match.id}?message=match_requested`);
 }
@@ -219,14 +220,15 @@ export async function acceptMatchAction(
     extra: { status: "accepted" },
   });
 
+  revalidatePath("/");
   revalidatePath("/home");
   revalidatePath("/matches");
   revalidatePath(`/matches/${matchId}`);
   revalidatePath(`/messages/${matchId}`);
 
   const dest = returnPath(formData, "/matches");
-  if (dest === "/home") {
-    redirectWithToast("/home", "match_accepted");
+  if (dest === "/" || dest === "/home") {
+    redirectWithToast("/?toast=match_accepted", "match_accepted");
   }
   if (dest === "/matches") {
     redirectWithToast("/matches?tab=accepted", "match_accepted");
@@ -285,12 +287,13 @@ export async function rejectMatchAction(
     matchId,
   });
 
+  revalidatePath("/");
   revalidatePath("/home");
   revalidatePath("/matches");
 
   const dest = returnPath(formData, "/matches");
-  if (dest === "/home") {
-    redirectWithToast("/home", "match_rejected");
+  if (dest === "/" || dest === "/home") {
+    redirectWithToast("/?toast=match_rejected", "match_rejected");
   }
   if (dest === "/matches") {
     redirectWithToast(matchesListPath(formData), "match_rejected");
@@ -347,12 +350,13 @@ export async function cancelMatchAction(
     matchId,
   });
 
+  revalidatePath("/");
   revalidatePath("/home");
   revalidatePath("/matches");
 
   const dest = returnPath(formData, "/matches");
-  if (dest === "/home") {
-    redirectWithToast("/home", "match_cancelled");
+  if (dest === "/" || dest === "/home") {
+    redirectWithToast("/?toast=match_cancelled", "match_cancelled");
   }
   if (dest === "/matches") {
     redirectWithToast(matchesListPath(formData), "match_cancelled");

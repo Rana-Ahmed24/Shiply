@@ -13,18 +13,18 @@ const TRUST_ICONS = [BadgeCheck, Wallet, Shield, Star, FileCheck] as const;
 
 export function TrustBar() {
   return (
-    <section className="border-t border-border/60 bg-secondary py-8">
+    <section className="border-y border-border/60 bg-secondary py-5">
       <Container>
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="flex flex-wrap items-center justify-around gap-4">
           {TRUST_FEATURES.map((feature, index) => {
             const Icon = TRUST_ICONS[index] ?? Shield;
             return (
               <li
                 key={feature}
-                className="flex items-center gap-3 text-sm text-muted-foreground"
+                className="flex items-center gap-2 text-sm text-brand-muted"
               >
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-teal/10 text-brand-teal">
-                  <Icon className="size-4" aria-hidden />
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand-gold/10 text-brand-gold">
+                  <Icon className="size-3.5" aria-hidden />
                 </span>
                 {feature}
               </li>

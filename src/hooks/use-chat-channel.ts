@@ -3,7 +3,11 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { TYPING_BROADCAST_EVENT, TYPING_TIMEOUT_MS } from "@/lib/messages/constants";
+import {
+  MESSAGES_READ_EVENT,
+  TYPING_BROADCAST_EVENT,
+  TYPING_TIMEOUT_MS,
+} from "@/lib/messages/constants";
 import { getChatImagePublicUrl } from "@/lib/messages/urls";
 import { createClientIfConfigured } from "@/lib/supabase/client";
 import type { ChatMessage } from "@/types/chat";
@@ -39,7 +43,7 @@ type UseChatChannelOptions = {
   userId: string;
   otherUserId: string;
   initialMessages: ChatMessage[];
-  onMarkRead: () => void;
+  onMarkRead: () => void | Promise<void>;
 };
 
 export function useChatChannel({
@@ -55,13 +59,45 @@ export function useChatChannel({
   const lastTypingSent = useRef(0);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
+  const markOwnMessagesReadByOther = useCallback(() => {
+    setMessages((prev) =>
+      prev.map((m) => (m.isOwn ? { ...m, readByOther: true } : m))
+    );
+  }, []);
+
+  const broadcastReadReceipts = useCallback(() => {
+    const send = () => {
+      void channelRef.current?.send({
+        type: "broadcast",
+        event: MESSAGES_READ_EVENT,
+        payload: { userId },
+      });
+    };
+    send();
+    setTimeout(send, 400);
+  }, [userId]);
+
   useEffect(() => {
-    setMessages(initialMessages);
+    setMessages((prev) =>
+      initialMessages.map((init) => {
+        const existing = prev.find((m) => m.id === init.id);
+        return existing
+          ? { ...init, readByOther: existing.readByOther || init.readByOther }
+          : init;
+      })
+    );
   }, [initialMessages]);
 
   useEffect(() => {
-    onMarkRead();
-  }, [matchId, onMarkRead]);
+    let cancelled = false;
+    void (async () => {
+      await onMarkRead();
+      if (!cancelled) broadcastReadReceipts();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [matchId, onMarkRead, broadcastReadReceipts]);
 
   useEffect(() => {
     const supabase = createClientIfConfigured();
@@ -82,7 +118,8 @@ export function useChatChannel({
         (payload) => {
           const row = payload.new as RawMessage;
           if (row.sender_id !== userId) {
-            onMarkRead();
+            void onMarkRead();
+            broadcastReadReceipts();
           }
           setMessages((prev) => {
             if (prev.some((m) => m.id === row.id)) return prev;
@@ -117,6 +154,12 @@ export function useChatChannel({
           typingTimer.current = setTimeout(() => setOtherTyping(false), TYPING_TIMEOUT_MS);
         }
       })
+      .on("broadcast", { event: MESSAGES_READ_EVENT }, ({ payload }) => {
+        const p = payload as { userId?: string };
+        if (p.userId === otherUserId) {
+          markOwnMessagesReadByOther();
+        }
+      })
       .subscribe();
 
     channelRef.current = channel;
@@ -126,7 +169,14 @@ export function useChatChannel({
       if (typingTimer.current) clearTimeout(typingTimer.current);
       void supabase.removeChannel(channel);
     };
-  }, [matchId, userId, otherUserId, onMarkRead]);
+  }, [
+    matchId,
+    userId,
+    otherUserId,
+    onMarkRead,
+    broadcastReadReceipts,
+    markOwnMessagesReadByOther,
+  ]);
 
   const broadcastTyping = useCallback(() => {
     const now = Date.now();

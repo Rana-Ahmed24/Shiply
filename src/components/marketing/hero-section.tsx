@@ -50,10 +50,10 @@ export function HeroSection({ listings }: HeroSectionProps) {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
-                href="/requests"
+                href="/requests/new"
                 className={cn(
                   buttonVariants({ size: "lg" }),
-                  "rounded-2xl bg-brand-gold px-10 py-8 text-brand-navy hover:bg-brand-gold/90"
+                  "inline-flex items-center gap-2 rounded-xl bg-brand-gold px-7 py-6 text-brand-navy hover:bg-brand-gold-light"
                 )}
               >
                 I need something
@@ -62,7 +62,7 @@ export function HeroSection({ listings }: HeroSectionProps) {
                 href="/listings/new"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
-                  "rounded-2xl border-border/80 px-15 py-8"
+                  "inline-flex items-center gap-2 rounded-xl border-border/80 bg-muted px-7 py-6 hover:bg-card-hover"
                 )}
               >
                 I&apos;m traveling

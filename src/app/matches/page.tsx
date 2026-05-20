@@ -34,7 +34,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </p>
         </div>
         <Link
-          href="/home"
+          href="/"
           className={cn(buttonVariants({ variant: "ghost" }), "rounded-2xl")}
         >
           Back to home

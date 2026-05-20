@@ -13,6 +13,7 @@ import {
   LISTING_SORT_OPTIONS,
   SERVICE_TYPE_OPTIONS,
 } from "@/lib/listings/constants";
+import { cn } from "@/lib/utils";
 
 function filtersFromParams(searchParams: URLSearchParams) {
   return {
@@ -25,7 +26,16 @@ function filtersFromParams(searchParams: URLSearchParams) {
   };
 }
 
-export function ListingsFilters() {
+type ListingsFiltersProps = {
+  /** Where filter navigation applies (e.g. `/travelers` or `/`) */
+  basePath?: string;
+  className?: string;
+};
+
+export function ListingsFilters({
+  basePath = "/travelers",
+  className,
+}: ListingsFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -45,13 +55,17 @@ export function ListingsFilters() {
   const [sort, setSort] = useState(initial.sort);
 
   function applyFilters(values: ReturnType<typeof filtersFromParams>) {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
+    ["q", "origin", "destination", "category", "service", "sort", "page"].forEach(
+      (key) => params.delete(key)
+    );
     Object.entries(values).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
     startTransition(() => {
-      const qs = params.toString();
-      router.push(qs ? `/travelers?${qs}` : "/travelers");
+      const listingQs = params.toString();
+      const path = listingQs ? `${basePath}?${listingQs}` : basePath;
+      router.push(path);
     });
   }
 
@@ -67,13 +81,23 @@ export function ListingsFilters() {
     setCategory("");
     setService("");
     setSort("arrival_asc");
-    startTransition(() => router.push("/travelers"));
+    const params = new URLSearchParams(searchParams.toString());
+    ["q", "origin", "destination", "category", "service", "sort", "page"].forEach(
+      (key) => params.delete(key)
+    );
+    startTransition(() => {
+      const qs = params.toString();
+      router.push(qs ? `${basePath}?${qs}` : basePath);
+    });
   }
 
   return (
     <form
       key={filterKey}
-      className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 md:p-5"
+      className={cn(
+        "space-y-4 rounded-2xl border border-border/60 bg-card p-4 md:p-5",
+        className
+      )}
       onSubmit={handleSubmit}
     >
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">

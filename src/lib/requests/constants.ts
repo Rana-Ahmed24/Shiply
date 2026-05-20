@@ -49,5 +49,12 @@ export const EDITABLE_LIFECYCLE: RequestLifecycle[] = [
   "accepted",
 ];
 
+export const REQUEST_SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "needed_by_asc", label: "Needed soonest" },
+  { value: "budget_desc", label: "Highest budget" },
+  { value: "urgency", label: "Most urgent" },
+] as const;
+
 export const MAX_REQUEST_IMAGES = 5;
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;

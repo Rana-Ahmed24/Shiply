@@ -51,7 +51,7 @@ export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem render={<Link href="/home" />}>
+          <DropdownMenuItem render={<Link href="/" />}>
             <Home className="size-4 shrink-0" aria-hidden />
             Home
           </DropdownMenuItem>

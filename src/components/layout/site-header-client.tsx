@@ -24,7 +24,6 @@ type SiteHeaderClientProps = {
   logoHref?: string;
   desktopAuth: React.ReactNode;
   mobileAuth: React.ReactNode;
-  modeToggle?: React.ReactNode;
   navLinks?: readonly NavLink[];
 };
 
@@ -32,7 +31,6 @@ export function SiteHeaderClient({
   logoHref = "/",
   desktopAuth,
   mobileAuth,
-  modeToggle,
   navLinks = NAV_LINKS,
 }: SiteHeaderClientProps) {
   const [open, setOpen] = useState(false);
@@ -56,9 +54,8 @@ export function SiteHeaderClient({
           </nav>
 
           <div className="flex items-center gap-2">
-            {modeToggle}
             <ThemeToggle />
-            <div className="hidden sm:block">{desktopAuth}</div>
+            <div className="flex items-center gap-1 sm:gap-2">{desktopAuth}</div>
 
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger

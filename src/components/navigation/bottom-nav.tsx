@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { href: "/home", label: "Home", icon: Home },
+  { href: "/", label: "Home", icon: Home },
   { href: "/matches", label: "Matches", icon: Handshake },
   { href: "/requests", label: "Requests", icon: Package },
   { href: "/messages", label: "Messages", icon: MessageSquare },
@@ -25,7 +25,9 @@ export function BottomNav() {
       <ul className="mx-auto flex max-w-lg items-stretch justify-around">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active =
-            pathname === href || (href !== "/home" && pathname.startsWith(href));
+            pathname === href ||
+            (href !== "/" && pathname.startsWith(href)) ||
+            (href === "/" && pathname === "/home");
           return (
             <li key={href} className="flex-1">
               <Link

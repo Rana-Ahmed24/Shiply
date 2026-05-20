@@ -22,4 +22,7 @@ export const CHAT_ELIGIBLE_STATUSES = [
 
 export const TYPING_BROADCAST_EVENT = "typing";
 
+/** Broadcast when a participant has read messages in the thread */
+export const MESSAGES_READ_EVENT = "messages_read";
+
 export const TYPING_TIMEOUT_MS = 3000;

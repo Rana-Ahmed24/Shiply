@@ -73,7 +73,7 @@ export function RequestTravelerPanel({
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="listingId" value={listingId} />
         <input type="hidden" name="role" value="customer" />
-        <input type="hidden" name="returnTo" value="/home" />
+        <input type="hidden" name="returnTo" value="/" />
 
         <div className="space-y-2">
           <Label htmlFor="match-request">Your request</Label>

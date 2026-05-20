@@ -107,6 +107,11 @@ export async function markMatchMessagesRead(
   }
 }
 
+export async function getTotalUnreadMessageCount(userId: string): Promise<number> {
+  const conversations = await getConversationsForUser(userId);
+  return conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+}
+
 export async function getConversationsForUser(
   userId: string
 ): Promise<ConversationPreview[]> {
