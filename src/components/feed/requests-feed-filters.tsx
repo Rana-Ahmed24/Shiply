@@ -3,10 +3,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
+import {
+  FeedFilterGrid,
+  FeedFilterPanel,
+} from "@/components/filters/feed-filter-panel";
 import { FilterCombobox } from "@/components/filters/filter-combobox";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { FilterSelect } from "@/components/filters/filter-select";
 import { DEPARTURE_COUNTRIES } from "@/lib/listings/constants";
 import { getCitiesForCountry } from "@/lib/geo/regions";
 import {
@@ -14,7 +16,6 @@ import {
   REQUEST_SORT_OPTIONS,
   REQUEST_URGENCY_OPTIONS,
 } from "@/lib/requests/constants";
-import { cn } from "@/lib/utils";
 
 function filtersFromParams(searchParams: URLSearchParams) {
   return {
@@ -129,99 +130,99 @@ export function RequestsFeedFilters({
     }
   }
 
+  const actions = (
+    <>
+      <button
+        type="submit"
+        disabled={pending}
+        className="feed-filter-btn-apply"
+      >
+        {pending ? "Applying…" : "Apply filters"}
+      </button>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={handleReset}
+        className="feed-filter-btn-reset"
+      >
+        Reset
+      </button>
+    </>
+  );
+
   return (
-    <form
-      key={filterKey}
-      className={cn(
-        "space-y-4 rounded-2xl border border-border/60 bg-card p-4 md:p-5",
-        className
-      )}
-      onSubmit={handleSubmit}
-    >
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        <Input
+    <form key={filterKey} onSubmit={handleSubmit} className={className}>
+      <FeedFilterPanel actions={actions}>
+        <input
           name="req_q"
+          type="search"
           placeholder="Search title, description, or city…"
           value={reqQ}
           onChange={(e) => setReqQ(e.target.value)}
-          className="h-11 rounded-2xl md:col-span-2 lg:col-span-3"
+          className="feed-filter-field w-full"
         />
-        <FilterCombobox
-          label="Origin country"
-          value={reqOrigin}
-          onChange={onOriginChange}
-          options={countryOptions}
-          placeholder="Type country (e.g. E for Egypt)…"
-        />
-        <FilterCombobox
-          label="Origin city"
-          value={reqCity}
-          onChange={setReqCity}
-          options={cityOptions}
-          placeholder={
-            reqOrigin
-              ? "Type city in selected country…"
-              : "Select a country first"
-          }
-          disabled={!reqOrigin || cityOptions.length === 0}
-        />
-        <Select
-          name="req_category"
-          value={reqCategory}
-          onChange={(e) => setReqCategory(e.target.value)}
-          className="rounded-2xl"
-        >
-          <option value="">All categories</option>
-          {REQUEST_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </Select>
-        <Select
-          name="req_urgency"
-          value={reqUrgency}
-          onChange={(e) => setReqUrgency(e.target.value)}
-          className="rounded-2xl"
-        >
-          <option value="">All urgency levels</option>
-          {REQUEST_URGENCY_OPTIONS.map((u) => (
-            <option key={u.value} value={u.value}>
-              {u.label}
-            </option>
-          ))}
-        </Select>
-        <Select
-          name="req_sort"
-          value={reqSort}
-          onChange={(e) => setReqSort(e.target.value)}
-          className="rounded-2xl"
-        >
-          {REQUEST_SORT_OPTIONS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </Select>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="submit"
-          disabled={pending}
-          className="rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
-        >
-          {pending ? "Applying…" : "Apply filters"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="rounded-2xl"
-          disabled={pending}
-          onClick={handleReset}
-        >
-          Reset
-        </Button>
-      </div>
+
+        <FeedFilterGrid cols={3}>
+          <FilterCombobox
+            label="Origin country"
+            value={reqOrigin}
+            onChange={onOriginChange}
+            options={countryOptions}
+            emptyLabel="All origin countries"
+            placeholder="All origin countries"
+          />
+          <FilterCombobox
+            label="Origin city"
+            value={reqCity}
+            onChange={setReqCity}
+            options={cityOptions}
+            emptyLabel="All origin cities"
+            placeholder={reqOrigin ? "All origin cities" : "Select country first"}
+            disabled={!reqOrigin || cityOptions.length === 0}
+          />
+          <FilterSelect
+            name="req_category"
+            value={reqCategory}
+            onChange={(e) => setReqCategory(e.target.value)}
+            aria-label="Category"
+          >
+            <option value="">All categories</option>
+            {REQUEST_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </FilterSelect>
+        </FeedFilterGrid>
+
+        <FeedFilterGrid cols={2}>
+          <FilterSelect
+            name="req_urgency"
+            value={reqUrgency}
+            onChange={(e) => setReqUrgency(e.target.value)}
+            aria-label="Urgency"
+          >
+            <option value="">All urgency levels</option>
+            {REQUEST_URGENCY_OPTIONS.map((u) => (
+              <option key={u.value} value={u.value}>
+                {u.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            name="req_sort"
+            value={reqSort}
+            onChange={(e) => setReqSort(e.target.value)}
+            aria-label="Sort"
+          >
+            {REQUEST_SORT_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </FilterSelect>
+        </FeedFilterGrid>
+      </FeedFilterPanel>
     </form>
   );
 }

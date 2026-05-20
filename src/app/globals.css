@@ -212,6 +212,42 @@
     @apply inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-4 py-1.5 text-xs tracking-wide text-brand-gold-light;
   }
 
+  .feed-filter-panel {
+    @apply space-y-4 rounded-2xl border border-border/70 bg-card p-5 shadow-soft md:p-6;
+  }
+
+  .feed-filter-grid-3 {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .feed-filter-grid-2 {
+    @apply grid max-w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-[66%];
+  }
+
+  .feed-filter-field {
+    @apply h-11 w-full rounded-full border border-border/80 bg-background/80 px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus-visible:border-brand-gold/40 focus-visible:ring-2 focus-visible:ring-brand-gold/20 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .feed-filter-select-wrap {
+    @apply relative w-full;
+  }
+
+  .feed-filter-select-wrap select {
+    @apply appearance-none pr-10;
+  }
+
+  .feed-filter-actions {
+    @apply flex flex-wrap items-center gap-3 pt-1;
+  }
+
+  .feed-filter-btn-apply {
+    @apply inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-8 text-sm font-semibold text-brand-navy transition-colors hover:bg-brand-gold-light disabled:opacity-60;
+  }
+
+  .feed-filter-btn-reset {
+    @apply inline-flex h-11 items-center justify-center rounded-full border border-border/80 bg-transparent px-8 text-sm font-medium text-foreground transition-colors hover:border-border hover:bg-muted/50 disabled:opacity-60;
+  }
+
   .shiply-search-bar {
     @apply flex flex-wrap items-center gap-2 rounded-xl border border-border/80 bg-muted p-2;
   }

@@ -3,10 +3,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
+import {
+  FeedFilterGrid,
+  FeedFilterPanel,
+} from "@/components/filters/feed-filter-panel";
 import { FilterCombobox } from "@/components/filters/filter-combobox";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { FilterSelect } from "@/components/filters/filter-select";
 import { EGYPT_CITIES, getCitiesForCountry } from "@/lib/geo/regions";
 import {
   LISTING_CATEGORIES,
@@ -14,7 +16,6 @@ import {
   SERVICE_TYPE_OPTIONS,
   DEPARTURE_COUNTRIES,
 } from "@/lib/listings/constants";
-import { cn } from "@/lib/utils";
 
 function filtersFromParams(searchParams: URLSearchParams) {
   return {
@@ -143,101 +144,109 @@ export function ListingsFilters({
     }
   }
 
+  const actions = (
+    <>
+      <button
+        type="submit"
+        disabled={pending}
+        className="feed-filter-btn-apply"
+      >
+        {pending ? "Applying…" : "Apply filters"}
+      </button>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={handleReset}
+        className="feed-filter-btn-reset"
+      >
+        Reset
+      </button>
+    </>
+  );
+
   return (
-    <form
-      key={filterKey}
-      className={cn(
-        "space-y-4 rounded-2xl border border-border/60 bg-card p-4 md:p-5",
-        className
-      )}
-      onSubmit={handleSubmit}
-    >
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        <Input
+    <form key={filterKey} onSubmit={handleSubmit} className={className}>
+      <FeedFilterPanel actions={actions}>
+        <input
           name="q"
+          type="search"
           placeholder="Search cities or notes…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="h-11 rounded-2xl md:col-span-2 lg:col-span-3"
+          className="feed-filter-field w-full"
         />
-        <FilterCombobox
-          label="Departure country"
-          value={origin}
-          onChange={onOriginChange}
-          options={countryOptions}
-          placeholder="Type country (e.g. U for US)…"
-        />
-        <FilterCombobox
-          label="Departure city"
-          value={originCity}
-          onChange={setOriginCity}
-          options={originCityOptions}
-          placeholder={
-            origin
-              ? "Type city in selected country…"
-              : "Select a country first"
-          }
-          disabled={!origin || originCityOptions.length === 0}
-        />
-        <FilterCombobox
-          label="Arrival city in Egypt"
-          value={destination}
-          onChange={setDestination}
-          options={egyptCityOptions}
-          placeholder="Type city (e.g. C for Cairo)…"
-        />
-        <Select
-          name="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="rounded-2xl"
-        >
-          <option value="">All categories</option>
-          {LISTING_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </Select>
-        <Select
-          name="service"
-          value={service}
-          onChange={(e) => setService(e.target.value)}
-          className="rounded-2xl"
-        >
-          <option value="">All services</option>
-          {SERVICE_TYPE_OPTIONS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </Select>
-        <Select name="sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-          {LISTING_SORT_OPTIONS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </Select>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="submit"
-          disabled={pending}
-          className="rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
-        >
-          {pending ? "Applying…" : "Apply filters"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="rounded-2xl"
-          disabled={pending}
-          onClick={handleReset}
-        >
-          Reset
-        </Button>
-      </div>
+
+        <FeedFilterGrid cols={3}>
+          <FilterCombobox
+            label="Departure country"
+            value={origin}
+            onChange={onOriginChange}
+            options={countryOptions}
+            emptyLabel="All departure countries"
+            placeholder="All departure countries"
+          />
+          <FilterCombobox
+            label="Arrival city"
+            value={destination}
+            onChange={setDestination}
+            options={egyptCityOptions}
+            emptyLabel="All arrival cities"
+            placeholder="All arrival cities"
+          />
+          <FilterSelect
+            name="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            aria-label="Category"
+          >
+            <option value="">All categories</option>
+            {LISTING_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </FilterSelect>
+        </FeedFilterGrid>
+
+        <FeedFilterGrid cols={3}>
+          <FilterCombobox
+            label="Departure city"
+            value={originCity}
+            onChange={setOriginCity}
+            options={originCityOptions}
+            emptyLabel="All departure cities"
+            placeholder={
+              origin ? "All departure cities" : "Select country first"
+            }
+            disabled={!origin || originCityOptions.length === 0}
+          />
+          <FilterSelect
+            name="service"
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+            aria-label="Service"
+          >
+            <option value="">All services</option>
+            {SERVICE_TYPE_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            name="sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            aria-label="Sort"
+          >
+            {LISTING_SORT_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </FilterSelect>
+        </FeedFilterGrid>
+      </FeedFilterPanel>
     </form>
   );
 }

@@ -90,6 +90,13 @@ export async function markMatchMessagesRead(
   }
 }
 
+function isMissingReadReceiptsRpc(error: { message?: string; code?: string }): boolean {
+  return (
+    error.code === "PGRST202" ||
+    Boolean(error.message?.includes("Could not find the function"))
+  );
+}
+
 /** Message IDs the viewer sent that the counterparty has read. */
 export async function getReadReceiptsForMatch(
   matchId: string,
@@ -102,12 +109,15 @@ export async function getReadReceiptsForMatch(
     p_viewer_id: viewerId,
   });
 
-  if (error) {
-    console.error("[messages] getReadReceiptsForMatch:", error.message);
-    return fallbackReadReceiptsForMatch(matchId, viewerId);
+  if (!error) {
+    return (data ?? []) as string[];
   }
 
-  return (data ?? []) as string[];
+  if (!isMissingReadReceiptsRpc(error)) {
+    console.error("[messages] getReadReceiptsForMatch:", error.message);
+  }
+
+  return fallbackReadReceiptsForMatch(matchId, viewerId);
 }
 
 async function fallbackReadReceiptsForMatch(
