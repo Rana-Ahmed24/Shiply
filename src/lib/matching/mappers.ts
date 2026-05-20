@@ -52,6 +52,7 @@ export function mapMatchToCard(
     listingRoute: meta.listingRoute,
     requestTitle: meta.requestTitle,
     counterpartyName: meta.counterpartyName,
+    counterpartyRoleLabel: isCustomer ? "Traveler" : "Customer",
     isInitiator,
     createdAt: row.created_at,
     canAccept: isPending && isRecipient,

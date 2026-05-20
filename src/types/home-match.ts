@@ -14,6 +14,8 @@ export type HomeMatchItem = MatchCardModel & {
   estimatedArrivalLabel: string | null;
   isViewerCustomer: boolean;
   isViewerTraveler: boolean;
+  travelerName: string | null;
+  customerName: string | null;
 };
 
 export type MatchesFeed = {

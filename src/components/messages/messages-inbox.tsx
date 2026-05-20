@@ -22,7 +22,7 @@ export function MessagesInbox({
     return (
       <div
         className={cn(
-          "rounded-2xl border border-dashed border-border/80 bg-muted/20 px-6 py-16 text-center",
+          "rounded-2xl border border-dashed border-border/80 bg-muted px-6 py-16 text-center",
           className
         )}
       >
@@ -49,7 +49,7 @@ export function MessagesInbox({
             <Link
               href={c.href}
               className={cn(
-                "flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40",
+                "flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-card-hover",
                 isActive && "bg-brand-teal/5"
               )}
             >

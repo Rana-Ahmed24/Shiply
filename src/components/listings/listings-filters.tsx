@@ -73,7 +73,7 @@ export function ListingsFilters() {
   return (
     <form
       key={filterKey}
-      className="space-y-4 rounded-2xl border border-border/60 bg-card/50 p-4 md:p-5"
+      className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 md:p-5"
       onSubmit={handleSubmit}
     >
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">

@@ -45,7 +45,7 @@ export function ToggleChipGroup({
                     "border-brand-gold/60 bg-brand-gold/20 text-foreground shadow-sm",
                     activeClassName
                   )
-                : "border-border/70 bg-card text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
+                : "border-border/70 bg-card text-muted-foreground hover:border-border hover:bg-card-hover hover:text-foreground"
             )}
           >
             <input

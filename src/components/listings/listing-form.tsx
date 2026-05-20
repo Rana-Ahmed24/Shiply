@@ -129,7 +129,7 @@ export function ListingForm({ listing }: ListingFormProps) {
 
   return (
     <form action={formAction} className="space-y-8" noValidate>
-      <section className="space-y-4 rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+      <section className="space-y-4 rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <h2 className="text-base font-semibold text-foreground">Route</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -183,7 +183,7 @@ export function ListingForm({ listing }: ListingFormProps) {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+      <section className="space-y-4 rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <h2 className="text-base font-semibold text-foreground">Travel dates</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -213,7 +213,7 @@ export function ListingForm({ listing }: ListingFormProps) {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+      <section className="space-y-4 rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <h2 className="text-base font-semibold text-foreground">
           Capacity & service
         </h2>
@@ -252,7 +252,7 @@ export function ListingForm({ listing }: ListingFormProps) {
         </div>
       </section>
 
-      <fieldset className="space-y-3 rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+      <fieldset className="space-y-3 rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <legend className="text-base font-semibold text-foreground">
           Allowed categories
         </legend>
@@ -271,7 +271,7 @@ export function ListingForm({ listing }: ListingFormProps) {
         <FieldError messages={state.fieldErrors?.categories} />
       </fieldset>
 
-      <fieldset className="space-y-3 rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+      <fieldset className="space-y-3 rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <legend className="text-base font-semibold text-foreground">
           Delivery preferences
         </legend>

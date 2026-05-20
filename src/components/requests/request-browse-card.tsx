@@ -4,15 +4,23 @@ import Link from "next/link";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { OwnershipDisabledCta } from "@/components/ui/ownership-disabled-cta";
 import type { RequestCardModel } from "@/types/request";
 import { cn } from "@/lib/utils";
 
 type RequestBrowseCardProps = {
   request: RequestCardModel;
+  currentUserId?: string | null;
   className?: string;
 };
 
-export function RequestBrowseCard({ request, className }: RequestBrowseCardProps) {
+export function RequestBrowseCard({
+  request,
+  currentUserId,
+  className,
+}: RequestBrowseCardProps) {
+  const isOwner = Boolean(currentUserId && request.customerId === currentUserId);
+
   return (
     <article
       className={cn(
@@ -38,7 +46,7 @@ export function RequestBrowseCard({ request, className }: RequestBrowseCardProps
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 font-semibold leading-snug">{request.title}</h3>
+          <h3 className="line-clamp-2 font-bold leading-snug">{request.title}</h3>
           <RequestStatusBadge
             lifecycle={request.lifecycle}
             label={request.lifecycleLabel}
@@ -46,7 +54,7 @@ export function RequestBrowseCard({ request, className }: RequestBrowseCardProps
         </div>
 
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{request.pickupLabel}</span>
+          <span className="font-semibold text-foreground">{request.pickupLabel}</span>
           <span className="mx-1.5">→</span>
           <span>{request.destinationLabel}</span>
         </p>
@@ -73,21 +81,29 @@ export function RequestBrowseCard({ request, className }: RequestBrowseCardProps
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-2">
           {request.budgetLabel ? (
-            <span className="text-lg font-semibold text-brand-gold">
+            <span className="text-lg font-bold text-brand-gold">
               {request.budgetLabel}
             </span>
           ) : (
             <span className="text-sm text-muted-foreground">Budget negotiable</span>
           )}
-          <Link
-            href={request.href}
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              "rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
-            )}
-          >
-            Accept request
-          </Link>
+          {isOwner ? (
+            <OwnershipDisabledCta
+              label="Your request"
+              tooltip="You cannot accept your own request"
+              block={false}
+            />
+          ) : (
+            <Link
+              href={request.href}
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
+              )}
+            >
+              Accept request
+            </Link>
+          )}
         </div>
       </div>
     </article>

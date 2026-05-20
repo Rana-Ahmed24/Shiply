@@ -16,7 +16,7 @@ export function RequestCard({ request, className }: RequestCardProps) {
     <Link
       href={request.href}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-shadow hover:border-brand-gold/30 hover:shadow-soft-lg",
+        "group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-colors hover:border-brand-gold/30 hover:bg-card-hover hover:shadow-soft-lg",
         className
       )}
     >

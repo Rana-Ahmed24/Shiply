@@ -18,7 +18,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const isTraveler = hasRole(profile.roles, "traveler");
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-6 shadow-soft md:p-8">
+    <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
         <ProfileAvatar
           name={profile.full_name}

@@ -51,7 +51,7 @@ function MatchesPageLiveInner({ initialFeed, userId }: MatchesPageLiveProps) {
   return (
     <div className="space-y-6">
       <div
-        className="flex w-full max-w-2xl flex-wrap gap-1 rounded-xl bg-muted/40 p-0.5"
+        className="flex w-full max-w-2xl flex-wrap gap-1 rounded-xl bg-muted p-0.5"
         role="tablist"
         aria-label="Match lists"
       >
@@ -81,7 +81,7 @@ function MatchesPageLiveInner({ initialFeed, userId }: MatchesPageLiveProps) {
         </TabButton>
       </div>
 
-      <section className="rounded-2xl border border-border/60 bg-card/40 shadow-soft">
+      <section className="rounded-2xl border border-border/60 bg-card shadow-soft">
         <div className="border-b border-border/50 px-4 py-4 sm:px-6">
           <h2 className="text-sm font-semibold">{tabTitle(activeTab)}</h2>
           <p className="mt-1 text-xs text-muted-foreground">

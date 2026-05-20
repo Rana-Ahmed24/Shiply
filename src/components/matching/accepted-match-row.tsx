@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 
+import { AcceptedMatchDetails } from "@/components/matching/accepted-match-details";
 import { MatchStatusBadge } from "@/components/matching/match-status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { HomeMatchItem } from "@/types/home-match";
@@ -14,9 +15,9 @@ type AcceptedMatchRowProps = {
 
 export function AcceptedMatchRow({ match }: AcceptedMatchRowProps) {
   return (
-    <li className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-soft">
+    <li className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <MatchStatusBadge status="accepted" label="Accepted" />
             {match.acceptedAtLabel && (
@@ -25,17 +26,8 @@ export function AcceptedMatchRow({ match }: AcceptedMatchRowProps) {
               </span>
             )}
           </div>
-          <p className="font-semibold leading-snug">{match.requestTitle}</p>
-          <p className="text-sm text-muted-foreground">
-            With{" "}
-            <span className="text-foreground">
-              {match.counterpartyName ?? "User"}
-            </span>
-          </p>
-          <p className="text-sm text-muted-foreground">{match.listingRoute}</p>
-          <p className="text-sm font-medium text-brand-gold">
-            {match.agreedPriceLabel}
-          </p>
+          <p className="font-bold leading-snug">{match.requestTitle}</p>
+          <AcceptedMatchDetails match={match} compact />
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">

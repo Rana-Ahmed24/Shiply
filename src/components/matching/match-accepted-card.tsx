@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 
+import { AcceptedMatchDetails } from "@/components/matching/accepted-match-details";
 import { MatchStatusBadge } from "@/components/matching/match-status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { HomeMatchItem } from "@/types/home-match";
@@ -14,8 +15,6 @@ type MatchAcceptedCardProps = {
 };
 
 export function MatchAcceptedCard({ match, className }: MatchAcceptedCardProps) {
-  const isCustomer = match.isViewerCustomer;
-
   return (
     <div
       className={cn(
@@ -32,58 +31,9 @@ export function MatchAcceptedCard({ match, className }: MatchAcceptedCardProps) 
         )}
       </div>
 
-      <p className="mt-4 text-lg font-semibold leading-snug">
-        {isCustomer ? (
-          <>
-            <span aria-hidden>🎉 </span>
-            Your request was accepted by{" "}
-            <span className="text-brand-teal">
-              {match.counterpartyName ?? "the traveler"}
-            </span>
-          </>
-        ) : (
-          <>You accepted this request</>
-        )}
-      </p>
-
-      <dl className="mt-4 grid gap-2 text-sm">
-        <div>
-          <dt className="text-xs uppercase text-muted-foreground">
-            {isCustomer ? "Traveler" : "Customer"}
-          </dt>
-          <dd className="font-medium">{match.counterpartyName ?? "User"}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase text-muted-foreground">Package</dt>
-          <dd className="font-medium">{match.requestTitle}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase text-muted-foreground">Route</dt>
-          <dd>{match.listingRoute}</dd>
-        </div>
-        {!isCustomer && (
-          <div>
-            <dt className="text-xs uppercase text-muted-foreground">
-              Pickup → destination
-            </dt>
-            <dd>
-              {match.pickupLabel} → {match.destinationLabel}
-            </dd>
-          </div>
-        )}
-        {match.estimatedArrivalLabel && (
-          <div>
-            <dt className="text-xs uppercase text-muted-foreground">
-              Estimated arrival
-            </dt>
-            <dd>{match.estimatedArrivalLabel}</dd>
-          </div>
-        )}
-        <div>
-          <dt className="text-xs uppercase text-muted-foreground">Reward</dt>
-          <dd className="font-semibold text-brand-gold">{match.agreedPriceLabel}</dd>
-        </div>
-      </dl>
+      <div className="mt-4">
+        <AcceptedMatchDetails match={match} />
+      </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
         <Link
@@ -94,13 +44,13 @@ export function MatchAcceptedCard({ match, className }: MatchAcceptedCardProps) 
           )}
         >
           <MessageCircle className="mr-1.5 size-4" aria-hidden />
-          Open chat
+          Chat
         </Link>
         <Link
           href={match.href}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}
         >
-          View details
+          Details
         </Link>
       </div>
     </div>

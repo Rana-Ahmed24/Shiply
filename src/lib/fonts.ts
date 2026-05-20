@@ -1,18 +1,14 @@
-import { DM_Sans, JetBrains_Mono, Syne } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
-
-export const fontSans = DM_Sans({
+export const fontSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
-export const fontMono = Syne({
+
+export const fontMono = JetBrains_Mono({
   variable: "--font-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-export const fontSyne = Syne({
-  variable: "--font-syne",
   subsets: ["latin"],
   display: "swap",
 });

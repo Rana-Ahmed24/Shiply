@@ -7,7 +7,7 @@ import { FOOTER_LINKS, SITE } from "@/lib/constants";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/60 bg-card/30">
+    <footer className="border-t border-border/60 bg-secondary">
       <Container className="py-12 md:py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4 sm:col-span-2 lg:col-span-1">

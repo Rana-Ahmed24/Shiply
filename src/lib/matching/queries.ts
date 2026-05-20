@@ -161,9 +161,8 @@ async function enrichMatchMeta(
   const profileIds = new Set<string>();
 
   rows.forEach((r) => {
-    profileIds.add(
-      r.traveler_id === viewerId ? r.customer_id : r.traveler_id
-    );
+    profileIds.add(r.traveler_id);
+    profileIds.add(r.customer_id);
   });
 
   const requestSelect = options?.homeDetail
@@ -253,6 +252,8 @@ async function enrichMatchMeta(
       estimatedArrivalLabel: formatArrival(listing?.arrival_at),
       isViewerCustomer: row.customer_id === viewerId,
       isViewerTraveler: row.traveler_id === viewerId,
+      travelerName: profileMap.get(row.traveler_id) ?? null,
+      customerName: profileMap.get(row.customer_id) ?? null,
     } satisfies HomeMatchItem;
   });
 }

@@ -61,7 +61,7 @@ export function HomeMatchRow({
   const counterpartyLabel = variant === "incoming" ? "Customer" : "Traveler";
 
   return (
-    <li className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-soft">
+    <li className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">

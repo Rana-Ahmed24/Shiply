@@ -55,12 +55,12 @@ export function HomeFeedTabs({ mode: serverMode, travelers, requests }: HomeFeed
 
   return (
     <section
-      className="rounded-2xl border border-border/60 bg-card/40 shadow-soft"
+      className="rounded-2xl border border-border/60 bg-card shadow-soft"
       aria-labelledby="home-feed-heading"
     >
       <div className="flex flex-col gap-4 border-b border-border/50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div
-          className="inline-flex w-full max-w-xs rounded-xl bg-muted/40 p-0.5 sm:w-auto"
+          className="inline-flex w-full max-w-xs rounded-xl bg-muted p-0.5 sm:w-auto"
           role="tablist"
           aria-label="Home feeds"
         >
@@ -156,8 +156,8 @@ function EmptyFeed({
   ctaLabel: string;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-border/60 bg-muted/15 px-6 py-12 text-center">
-      <div className="mb-4 flex size-11 items-center justify-center rounded-2xl border border-border/50 bg-card/80">
+    <div className="flex flex-col items-center rounded-xl border border-dashed border-border/60 bg-muted px-6 py-12 text-center">
+      <div className="mb-4 flex size-11 items-center justify-center rounded-2xl border border-border/50 bg-card-hover">
         <Icon className="size-5 text-muted-foreground" aria-hidden />
       </div>
       <p className="text-sm font-medium text-foreground">{title}</p>

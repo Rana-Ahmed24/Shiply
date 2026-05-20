@@ -18,7 +18,7 @@ export function ProfileReviews({ reviews }: ProfileReviewsProps) {
       {reviews.map((review) => (
         <li
           key={review.id}
-          className="rounded-2xl border border-border/60 bg-card/40 p-4 shadow-soft"
+          className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft"
         >
           <div className="flex items-center justify-between gap-2">
             <p className="font-medium">{review.reviewer_name ?? "Anonymous"}</p>

@@ -13,7 +13,7 @@ const TRUST_ICONS = [BadgeCheck, Wallet, Shield, Star, FileCheck] as const;
 
 export function TrustBar() {
   return (
-    <section className="border-t border-border/60 bg-card/40 py-8">
+    <section className="border-t border-border/60 bg-secondary py-8">
       <Container>
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {TRUST_FEATURES.map((feature, index) => {

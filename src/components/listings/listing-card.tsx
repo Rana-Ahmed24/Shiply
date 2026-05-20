@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import { ListingTripDates } from "@/components/listings/listing-trip-dates";
 import { Badge } from "@/components/ui/badge";
-import { fontSyne } from "@/lib/fonts";
 import type { ListingCardModel } from "@/types/listing";
 import { cn } from "@/lib/utils";
 
@@ -16,17 +15,17 @@ export function ListingCard({ listing, className }: ListingCardProps) {
     <Link
       href={listing.href}
       className={cn(
-        "group block rounded-2xl border border-border/60 bg-card p-5 shadow-soft transition-shadow hover:border-brand-gold/30 hover:shadow-soft-lg",
+        "group block rounded-2xl border border-border/60 bg-card p-5 shadow-soft transition-colors hover:border-brand-gold/30 hover:bg-card-hover hover:shadow-soft-lg",
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium">
           <span className="mr-1">{listing.origin.flag}</span>
-          <span className={fontSyne.className}>{listing.origin.city}</span>
+          <span className="font-semibold">{listing.origin.city}</span>
           <span className="mx-2 text-muted-foreground">→</span>
           <span className="mr-1">{listing.destination.flag}</span>
-          <span className={fontSyne.className}>{listing.destination.city}</span>
+          <span className="font-semibold">{listing.destination.city}</span>
         </p>
         {listing.rating > 0 && (
           <Badge className="shrink-0 rounded-full border-0 bg-brand-gold/15 px-2.5 text-brand-gold">

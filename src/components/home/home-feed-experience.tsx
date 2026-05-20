@@ -39,7 +39,12 @@ export function HomeFeedExperience({
           travelerAcceptedCount,
         }}
       />
-      <HomeModeFeed mode={mode} travelers={travelers} requests={requests} />
+      <HomeModeFeed
+        mode={mode}
+        travelers={travelers}
+        requests={requests}
+        userId={userId}
+      />
     </div>
   );
 }

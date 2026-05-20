@@ -37,7 +37,12 @@ export function MatchCard({ match, className }: MatchCardProps) {
           </span>
         )}
         {match.counterpartyName && (
-          <span className="text-muted-foreground">with {match.counterpartyName}</span>
+          <span className="text-muted-foreground">
+            {match.counterpartyRoleLabel}:{" "}
+            <span className="font-medium text-foreground">
+              {match.counterpartyName}
+            </span>
+          </span>
         )}
       </div>
 

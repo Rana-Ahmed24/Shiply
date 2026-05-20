@@ -33,7 +33,7 @@ export function ModeToggle({ mode: serverMode, className }: ModeToggleProps) {
   return (
     <div
       className={cn(
-        "inline-flex rounded-2xl border border-border/60 bg-muted/40 p-0.5 text-xs font-medium",
+        "inline-flex rounded-2xl border border-border/60 bg-muted p-0.5 text-xs font-medium",
         pending && "opacity-70",
         className
       )}

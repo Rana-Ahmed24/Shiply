@@ -53,7 +53,7 @@ export function HomeMatchesSummary({
 
   return (
     <section className="space-y-3" aria-label="Matches summary">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card/60 px-4 py-4 shadow-soft sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card px-4 py-4 shadow-soft sm:px-5">
         <div className="flex items-center gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/50">
             <PendingIcon

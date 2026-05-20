@@ -70,6 +70,7 @@ export type MatchCardModel = {
   listingRoute: string;
   requestTitle: string;
   counterpartyName: string | null;
+  counterpartyRoleLabel: "Traveler" | "Customer";
   isInitiator: boolean;
   createdAt: string;
   canAccept: boolean;

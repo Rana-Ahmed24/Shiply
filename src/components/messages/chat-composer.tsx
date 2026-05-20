@@ -73,7 +73,7 @@ export function ChatComposer({
   return (
     <div
       className={cn(
-        "border-t border-border/50 bg-card/95 px-3 py-3 backdrop-blur-sm pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        "border-t border-border/50 bg-card px-3 py-3 backdrop-blur-sm pb-[max(0.75rem,env(safe-area-inset-bottom))]",
         className
       )}
     >

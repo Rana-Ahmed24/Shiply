@@ -16,6 +16,7 @@ export const NAV_LINKS = [
 /** Shown in site header when the user is signed in */
 export const AUTH_NAV_LINKS = [
   { href: "/home", label: "Home" },
+  { href: "/messages", label: "Messages" },
   { href: "/matches", label: "Matches" },
   { href: "/travelers", label: "Find travelers" },
   { href: "/requests", label: "Requests" },

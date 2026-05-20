@@ -80,6 +80,14 @@ export async function createMatchAction(
     return { error: "You cannot match your own listing with your own request." };
   }
 
+  const isCustomerRole = role === "customer";
+  if (isCustomerRole && listing.traveler_id === user.id) {
+    return { error: "You cannot send a request to your own trip." };
+  }
+  if (!isCustomerRole && request.customer_id === user.id) {
+    return { error: "You cannot accept your own request." };
+  }
+
   const existing = await getMatchByRequestId(requestId);
   if (existing && existing.status !== "cancelled") {
     return { error: "This request already has an active delivery match." };
@@ -103,7 +111,7 @@ export async function createMatchAction(
     };
   }
 
-  const isCustomer = role === "customer";
+  const isCustomer = isCustomerRole;
   if (isCustomer && request.customer_id !== user.id) {
     return { error: "You can only request a match for your own requests." };
   }

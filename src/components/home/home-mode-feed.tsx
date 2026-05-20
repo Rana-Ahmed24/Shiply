@@ -16,6 +16,7 @@ type HomeModeFeedProps = {
   mode: AppMode;
   travelers: ListingCardModel[];
   requests: RequestCardModel[];
+  userId: string;
 };
 
 const FEED_META = {
@@ -41,6 +42,7 @@ export function HomeModeFeed({
   mode: serverMode,
   travelers,
   requests,
+  userId,
 }: HomeModeFeedProps) {
   const mode = useAppMode(serverMode);
   const meta = FEED_META[mode];
@@ -50,7 +52,7 @@ export function HomeModeFeed({
 
   return (
     <section
-      className="rounded-2xl border border-border/60 bg-card/40 shadow-soft"
+      className="rounded-2xl border border-border/60 bg-card shadow-soft"
       aria-labelledby="home-feed-heading"
     >
       <div className="border-b border-border/50 px-4 py-4 sm:px-6">
@@ -72,15 +74,23 @@ export function HomeModeFeed({
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {mode === "customer"
               ? travelers.map((listing) => (
-                  <ListingBrowseCard key={listing.id} listing={listing} />
+                  <ListingBrowseCard
+                    key={listing.id}
+                    listing={listing}
+                    currentUserId={userId}
+                  />
                 ))
               : requests.map((request) => (
-                  <RequestBrowseCard key={request.id} request={request} />
+                  <RequestBrowseCard
+                    key={request.id}
+                    request={request}
+                    currentUserId={userId}
+                  />
                 ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center rounded-xl border border-dashed border-border/60 bg-muted/15 px-6 py-12 text-center">
-            <div className="mb-4 flex size-11 items-center justify-center rounded-2xl border border-border/50 bg-card/80">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border/60 bg-muted px-6 py-12 text-center">
+            <div className="mb-4 flex size-11 items-center justify-center rounded-2xl border border-border/50 bg-card-hover">
               <Icon className="size-5 text-muted-foreground" aria-hidden />
             </div>
             <p className="text-sm font-medium text-foreground">{meta.emptyTitle}</p>

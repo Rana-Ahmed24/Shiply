@@ -51,7 +51,7 @@ function StatCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/50 p-4 shadow-soft">
+    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
       <Icon className="mb-2 size-5 text-brand-teal" aria-hidden />
       <p className="text-xs uppercase tracking-wider text-muted-foreground">
         {label}

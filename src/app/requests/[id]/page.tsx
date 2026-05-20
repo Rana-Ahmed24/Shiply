@@ -9,6 +9,7 @@ import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { TravelerAcceptPanel } from "@/components/matching/traveler-accept-panel";
+import { OwnershipDisabledCta } from "@/components/ui/ownership-disabled-cta";
 import { getSession } from "@/lib/auth/server";
 import {
   getMatchByRequestId,
@@ -192,9 +193,21 @@ export default async function RequestDetailPage({
             </p>
           </section>
 
+          {isOwner && (
+            <section className="rounded-2xl border border-border/60 p-6">
+              <h2 className="font-bold">Offer to deliver</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This is your package request. Travelers can offer to deliver it.
+              </p>
+              <OwnershipDisabledCta
+                label="Your request"
+                tooltip="You cannot accept your own request"
+              />
+            </section>
+          )}
           {canOfferDelivery && (
             <section className="rounded-2xl border border-border/60 p-6">
-              <h2 className="font-semibold">Offer to deliver</h2>
+              <h2 className="font-bold">Offer to deliver</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Pick one of your active trips. Compatibility is checked before
                 sending.
