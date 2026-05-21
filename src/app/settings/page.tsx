@@ -4,8 +4,11 @@ import { Container } from "@/components/layout/container";
 import { AvatarUploadForm } from "@/components/profile/avatar-upload-form";
 import { ProfileEditForm } from "@/components/profile/profile-edit-form";
 import { buttonVariants } from "@/components/ui/button";
+import { VerificationStatusBanner } from "@/components/verification/verification-status-banner";
+import { hasRole } from "@/lib/auth/roles";
 import { requireSession } from "@/lib/auth/server";
 import { getPublicProfile } from "@/lib/profile/queries";
+import { getTravelerVerification } from "@/lib/verification/queries";
 import { cn } from "@/lib/utils";
 
 export default async function SettingsPage() {
@@ -14,6 +17,9 @@ export default async function SettingsPage() {
   );
 
   const profile = await getPublicProfile(user.id, user.id);
+  const travelerVerification = hasRole(profile?.roles, "traveler")
+    ? await getTravelerVerification(user.id)
+    : null;
 
   if (!profile) {
     return (
@@ -41,6 +47,10 @@ export default async function SettingsPage() {
           View public profile
         </Link>
       </div>
+
+      {travelerVerification ? (
+        <VerificationStatusBanner verification={travelerVerification} />
+      ) : null}
 
       <AvatarUploadForm
         name={profile.full_name}

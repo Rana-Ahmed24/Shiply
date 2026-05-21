@@ -1,5 +1,6 @@
 import type { TravelerTier } from "@/lib/profile/constants";
 import type { UserRole } from "@/lib/auth/roles";
+import type { TravelerVerificationView } from "@/types/traveler-verification";
 
 export type ProfileVerification = {
   type: string;
@@ -31,6 +32,7 @@ export type PublicProfile = {
   customer_review_count: number;
   created_at: string;
   verifications: ProfileVerification[];
+  travelerVerification: TravelerVerificationView | null;
   reviews: ProfileReview[];
   is_owner: boolean;
 };

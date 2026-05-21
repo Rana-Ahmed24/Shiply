@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plane, ShieldCheck, Star } from "lucide-react";
 
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 import { buttonVariants } from "@/components/ui/button";
 import { OwnershipDisabledCta } from "@/components/ui/ownership-disabled-cta";
 import type { ListingCardModel } from "@/types/listing";
@@ -113,9 +114,9 @@ export function TravelerFeedCard({
 
         <p className="mb-2 text-[0.68rem] text-brand-muted">Accepts</p>
         <div className="mb-4 flex flex-wrap gap-1.5">
-          {listing.verified && (
-            <span className="shiply-tag shiply-tag-verified">Verified</span>
-          )}
+          {listing.verified ? (
+            <TravelerVerificationBadge status="verified" className="shiply-tag" />
+          ) : null}
           {listing.categories.slice(0, 4).map((cat) => (
             <span key={cat} className="shiply-tag">
               {cat}

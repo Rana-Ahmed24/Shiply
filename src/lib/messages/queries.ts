@@ -291,6 +291,7 @@ export async function getConversationMeta(
   counterpartyName: string | null;
   counterpartyAvatarUrl: string | null;
   counterpartyId: string;
+  counterpartyVerificationStatus: import("@/types/traveler-verification").TravelerVerificationStatus | null;
 } | null> {
   const supabase = await createClient();
 
@@ -324,10 +325,23 @@ export async function getConversationMeta(
       .maybeSingle(),
   ]);
 
+  const isCounterpartyTraveler = match.traveler_id === counterpartyId;
+  let counterpartyVerificationStatus: import("@/types/traveler-verification").TravelerVerificationStatus | null =
+    null;
+  if (isCounterpartyTraveler) {
+    const { fetchVerificationStatusMap } = await import(
+      "@/lib/verification/queries"
+    );
+    const statusMap = await fetchVerificationStatusMap([counterpartyId as string]);
+    counterpartyVerificationStatus =
+      statusMap.get(counterpartyId as string) ?? "not_submitted";
+  }
+
   return {
     title: (requestRes.data?.title as string) ?? "Delivery chat",
     counterpartyName: (profileRes.data?.full_name as string | null) ?? null,
     counterpartyAvatarUrl: (profileRes.data?.avatar_url as string | null) ?? null,
     counterpartyId: counterpartyId as string,
+    counterpartyVerificationStatus,
   };
 }

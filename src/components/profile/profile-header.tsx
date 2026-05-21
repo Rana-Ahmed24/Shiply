@@ -4,6 +4,8 @@ import { MapPin, Languages } from "lucide-react";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { ProfileTierBadge } from "@/components/profile/profile-tier-badge";
 import { ProfileVerificationBadges } from "@/components/profile/profile-verification-badges";
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
+import { VerificationStatusBanner } from "@/components/verification/verification-status-banner";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { hasRole } from "@/lib/auth/roles";
@@ -79,6 +81,16 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <span>{profile.meetup_locations.join(" · ")}</span>
             </div>
           )}
+
+          {isTraveler && profile.travelerVerification ? (
+            profile.is_owner ? (
+              <VerificationStatusBanner
+                verification={profile.travelerVerification}
+              />
+            ) : profile.travelerVerification.status === "verified" ? (
+              <TravelerVerificationBadge status="verified" />
+            ) : null
+          ) : null}
 
           <ProfileVerificationBadges verifications={profile.verifications} />
         </div>

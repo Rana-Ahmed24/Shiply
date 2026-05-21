@@ -95,7 +95,7 @@ export function TravelerAcceptPanel({
         <Button
           type="submit"
           disabled={
-            pending || !listingId || (compatibility != null && !compatibility.canMatch)
+            pending || !listingId
           }
           className="w-full rounded-2xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
         >

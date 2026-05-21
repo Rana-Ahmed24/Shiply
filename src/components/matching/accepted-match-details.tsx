@@ -1,4 +1,5 @@
 import { MatchRoleBadge } from "@/components/matching/match-role-badge";
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 import type { HomeMatchItem } from "@/types/home-match";
 
 type AcceptedMatchDetailsProps = {
@@ -34,9 +35,14 @@ export function AcceptedMatchDetails({
         )}
       </p>
 
-      <p className="text-sm">
-        <span className="text-muted-foreground">{otherPartyLabel}: </span>
-        <span className="font-semibold text-foreground">{otherPartyName}</span>
+      <p className="flex flex-wrap items-center gap-2 text-sm">
+        <span>
+          <span className="text-muted-foreground">{otherPartyLabel}: </span>
+          <span className="font-semibold text-foreground">{otherPartyName}</span>
+        </span>
+        {isCustomer && match.travelerVerified ? (
+          <TravelerVerificationBadge status="verified" />
+        ) : null}
       </p>
 
       {!compact && (

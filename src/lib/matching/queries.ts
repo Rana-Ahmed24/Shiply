@@ -15,19 +15,12 @@ import type { CompatibilityResult } from "@/types/match";
 import type { HomeMatchItem, MatchesFeed } from "@/types/home-match";
 import type { MatchCardModel, MatchDetailModel } from "@/types/match";
 
-async function isTravelerVerified(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  travelerId: string
-): Promise<boolean> {
-  const { data } = await supabase
-    .from("verifications")
-    .select("user_id")
-    .eq("user_id", travelerId)
-    .eq("status", "approved")
-    .in("type", ["passport", "government_id", "flight_itinerary"])
-    .limit(1);
-
-  return (data?.length ?? 0) > 0;
+async function isTravelerVerified(travelerId: string): Promise<boolean> {
+  const { fetchVerifiedTravelerIds } = await import(
+    "@/lib/verification/queries"
+  );
+  const verified = await fetchVerifiedTravelerIds([travelerId]);
+  return verified.has(travelerId);
 }
 
 export async function fetchListingForMatch(
@@ -78,8 +71,7 @@ export async function getCompatibilityForPair(
   const request = await fetchRequestForMatch(requestId);
   if (!listing || !request) return null;
 
-  const supabase = await createClient();
-  const verified = await isTravelerVerified(supabase, listing.traveler_id);
+  const verified = await isTravelerVerified(listing.traveler_id);
   return computeCompatibility(listing, request, verified);
 }
 
@@ -173,14 +165,22 @@ async function enrichMatchMeta(
     ? "id, origin_city, origin_country_code, destination_city, destination_country_code, arrival_at"
     : "id, origin_city, origin_country_code, destination_city, destination_country_code";
 
-  const [listingsRes, requestsRes, profilesRes] = await Promise.all([
-    supabase
-      .from("traveler_listings")
-      .select(listingSelect)
-      .in("id", listingIds),
-    supabase.from("customer_requests").select(requestSelect).in("id", requestIds),
-    supabase.from("profiles").select("id, full_name").in("id", [...profileIds]),
-  ]);
+  const travelerIds = [...new Set(rows.map((r) => r.traveler_id))];
+
+  const [listingsRes, requestsRes, profilesRes, verifiedTravelers] =
+    await Promise.all([
+      supabase
+        .from("traveler_listings")
+        .select(listingSelect)
+        .in("id", listingIds),
+      supabase.from("customer_requests").select(requestSelect).in("id", requestIds),
+      supabase.from("profiles").select("id, full_name").in("id", [...profileIds]),
+      options?.homeDetail
+        ? import("@/lib/verification/queries").then((m) =>
+            m.fetchVerifiedTravelerIds(travelerIds)
+          )
+        : Promise.resolve(new Set<string>()),
+    ]);
 
   type ListingRow = {
     id: string;
@@ -254,6 +254,7 @@ async function enrichMatchMeta(
       isViewerTraveler: row.traveler_id === viewerId,
       travelerName: profileMap.get(row.traveler_id) ?? null,
       customerName: profileMap.get(row.customer_id) ?? null,
+      travelerVerified: verifiedTravelers.has(row.traveler_id),
     } satisfies HomeMatchItem;
   });
 }

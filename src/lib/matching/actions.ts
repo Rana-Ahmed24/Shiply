@@ -105,12 +105,6 @@ export async function createMatchAction(
   const verified = (verifications?.length ?? 0) > 0;
   const compatibility = computeCompatibility(listing, request, verified);
 
-  if (!compatibility.canMatch) {
-    return {
-      error: `Compatibility score is ${compatibility.score}/100. Minimum 50 required to request a match.`,
-    };
-  }
-
   const isCustomer = isCustomerRole;
   if (isCustomer && request.customer_id !== user.id) {
     return { error: "You can only request a match for your own requests." };

@@ -7,6 +7,8 @@ export const PROTECTED_ROUTE_PREFIXES = [
   "/listings/new",
   "/requests",
   "/profile",
+  "/verify-traveler",
+  "/admin",
 ] as const;
 
 /** Auth pages — redirect to dashboard when already signed in */

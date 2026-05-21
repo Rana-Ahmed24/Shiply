@@ -1,11 +1,20 @@
-import {
-  DEFAULT_AGREED_PRICE_EGP,
-  MIN_COMPATIBILITY_SCORE,
-} from "@/lib/matching/constants";
+import { countryName } from "@/lib/listings/constants";
+import { DEFAULT_AGREED_PRICE_EGP } from "@/lib/matching/constants";
 import type {
   CompatibilityFactor,
   CompatibilityResult,
 } from "@/types/match";
+
+function formatFriendlyDate(iso: string): string {
+  const normalized = iso.includes("T") ? iso : `${iso}T12:00:00.000Z`;
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(normalized));
+}
 
 export type ListingForMatch = {
   id: string;
@@ -43,37 +52,64 @@ function scoreRoute(
   let score = 0;
   const details: string[] = [];
 
+  const destCountry = countryName(listing.destination_country_code);
+  const originCountry = countryName(listing.origin_country_code);
+  const destCity = listing.destination_city;
+
   if (listing.destination_country_code.toUpperCase() === "EG") {
     score += 15;
-    details.push("Trip ends in Egypt");
+    details.push(
+      `This trip ends in ${destCity}, ${destCountry} — suitable for delivery into Egypt.`
+    );
   } else {
-    details.push("Listing destination is not Egypt");
+    details.push(
+      `This trip ends in ${destCity}, ${destCountry}, not Egypt — it may not work for delivery into Egypt.`
+    );
   }
 
-  const prefCountry = request.preferred_origin_country_code?.toUpperCase();
-  if (!prefCountry) {
+  const prefCountryCode = request.preferred_origin_country_code?.toUpperCase();
+  if (!prefCountryCode) {
     score += 10;
-    details.push("Any origin country OK");
-  } else if (listing.origin_country_code.toUpperCase() === prefCountry) {
+    details.push(
+      "You did not specify where the item should be bought from; any departure country is acceptable."
+    );
+  } else if (listing.origin_country_code.toUpperCase() === prefCountryCode) {
     score += 10;
-    details.push(`Origin matches ${prefCountry}`);
+    const prefCountry = countryName(prefCountryCode);
+    details.push(
+      `You want the item from ${prefCountry}. Traveler departs from ${listing.origin_city}, ${originCountry} — that matches.`
+    );
   } else {
-    details.push(`Prefers origin ${prefCountry}, trip from ${listing.origin_country_code}`);
+    const prefCountry = countryName(prefCountryCode);
+    details.push(
+      `You want the item from ${prefCountry}, but this traveler departs from ${listing.origin_city}, ${originCountry}.`
+    );
   }
 
-  const prefCity = request.preferred_origin_city?.trim().toLowerCase();
-  if (prefCity && !listing.origin_city.toLowerCase().includes(prefCity)) {
-    score = Math.max(0, score - 5);
-    details.push("Preferred city may not match departure city");
+  const prefCity = request.preferred_origin_city?.trim();
+  if (prefCity) {
+    const cityMatches = listing.origin_city
+      .toLowerCase()
+      .includes(prefCity.toLowerCase());
+    if (cityMatches) {
+      details.push(
+        `You asked for a departure city near ${prefCity}; this trip leaves from ${listing.origin_city}.`
+      );
+    } else {
+      score = Math.max(0, score - 5);
+      details.push(
+        `You asked for a departure city near ${prefCity}; this trip leaves from ${listing.origin_city} instead.`
+      );
+    }
   }
 
   return {
     key: "route",
-    label: "Route",
+    label: "Route & locations",
     score,
     maxScore: max,
     passed: score >= max * 0.6,
-    detail: details.join(" · "),
+    detail: details.join(" "),
   };
 }
 
@@ -85,36 +121,49 @@ function scoreDates(
   let score = max;
   const details: string[] = [];
   const arrival = new Date(listing.arrival_at);
+  const arrivalLabel = formatFriendlyDate(listing.arrival_at);
 
   if (request.needed_by) {
     const needed = new Date(`${request.needed_by}T23:59:59.000Z`);
+    const neededLabel = formatFriendlyDate(request.needed_by);
     if (arrival <= needed) {
-      details.push("Traveler arrives before needed-by date");
+      details.push(
+        `You need the item by ${neededLabel}. Traveler will arrive in Egypt on ${arrivalLabel} — in time for your deadline.`
+      );
     } else {
       score = 5;
-      details.push("Arrival is after needed-by date");
+      details.push(
+        `You need the item by ${neededLabel}, but the traveler will only arrive on ${arrivalLabel} — after your deadline.`
+      );
     }
   } else {
-    details.push("No needed-by date on request");
+    details.push(
+      `You did not set a needed-by date. Traveler will arrive in Egypt on ${arrivalLabel}.`
+    );
   }
 
   if (listing.departure_at) {
     const departure = new Date(listing.departure_at);
+    const departureLabel = formatFriendlyDate(listing.departure_at);
     if (departure <= arrival) {
-      details.push("Departure before arrival");
+      details.push(
+        `Traveler leaves on ${departureLabel} and arrives on ${arrivalLabel}.`
+      );
     } else {
       score = Math.min(score, 8);
-      details.push("Departure after arrival");
+      details.push(
+        `Trip dates look unusual: departure (${departureLabel}) is after arrival (${arrivalLabel}).`
+      );
     }
   }
 
   return {
     key: "dates",
-    label: "Dates",
+    label: "Dates & timing",
     score,
     maxScore: max,
     passed: score >= max * 0.6,
-    detail: details.join(" · "),
+    detail: details.join(" "),
   };
 }
 
@@ -124,15 +173,18 @@ function scoreCategory(
 ): CompatibilityFactor {
   const max = 25;
   const ok = listing.accepted_categories.includes(request.item_category);
+  const allowed = listing.accepted_categories.join(", ");
+  const wanted = request.item_category;
+
   return {
     key: "category",
-    label: "Category",
+    label: "Product category",
     score: ok ? max : 0,
     maxScore: max,
     passed: ok,
     detail: ok
-      ? `${request.item_category} is allowed on this trip`
-      : `Traveler does not carry ${request.item_category}`,
+      ? `You want ${wanted}. This traveler accepts: ${allowed} — your item type is included.`
+      : `You want ${wanted}. This traveler only accepts: ${allowed} — your item type is not on their list.`,
   };
 }
 
@@ -144,23 +196,23 @@ function scoreCapacity(
   if (request.estimated_weight_kg == null) {
     return {
       key: "capacity",
-      label: "Capacity",
+      label: "Weight & capacity",
       score: max,
       maxScore: max,
       passed: true,
-      detail: "Weight not specified on request",
+      detail: `You did not estimate package weight. Traveler has ${listing.available_weight_kg} kg free on this trip.`,
     };
   }
   const ok = listing.available_weight_kg >= request.estimated_weight_kg;
   return {
     key: "capacity",
-    label: "Capacity",
+    label: "Weight & capacity",
     score: ok ? max : 0,
     maxScore: max,
     passed: ok,
     detail: ok
-      ? `${request.estimated_weight_kg} kg fits in ${listing.available_weight_kg} kg available`
-      : `Need ${request.estimated_weight_kg} kg but only ${listing.available_weight_kg} kg available`,
+      ? `Your package is about ${request.estimated_weight_kg} kg. Traveler has ${listing.available_weight_kg} kg free capacity — enough room.`
+      : `Your package is about ${request.estimated_weight_kg} kg, but traveler only has ${listing.available_weight_kg} kg free on this trip.`,
   };
 }
 
@@ -168,13 +220,13 @@ function scoreVerification(travelerVerified: boolean): CompatibilityFactor {
   const max = 10;
   return {
     key: "verification",
-    label: "Verification",
+    label: "Traveler verification",
     score: travelerVerified ? max : 3,
     maxScore: max,
     passed: travelerVerified,
     detail: travelerVerified
-      ? "Traveler has approved ID verification"
-      : "Traveler is not ID-verified yet",
+      ? "This traveler is a verified traveler on Shiply (passport, selfie, and flight proof reviewed)."
+      : "This traveler has not completed Shiply verification yet. You can still send a request.",
   };
 }
 
@@ -196,7 +248,7 @@ export function computeCompatibility(
   return {
     score,
     factors,
-    canMatch: score >= MIN_COMPATIBILITY_SCORE,
+    canMatch: true,
   };
 }
 

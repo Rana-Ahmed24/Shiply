@@ -60,6 +60,7 @@ export default async function MatchChatPage({ params }: MatchChatPageProps) {
             title: meta.title,
             counterpartyName: meta.counterpartyName,
             counterpartyAvatarUrl: meta.counterpartyAvatarUrl,
+            counterpartyVerificationStatus: meta.counterpartyVerificationStatus,
           }}
           initialMessages={messages}
         />

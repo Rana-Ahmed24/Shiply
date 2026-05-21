@@ -1,6 +1,8 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 
 import type { ListingCardModel } from "@/types/listing";
 import { cn } from "@/lib/utils";
@@ -59,12 +61,9 @@ export function HeroListingPreviewCard({
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        {listing.verified && (
-          <span className="shiply-tag shiply-tag-verified inline-flex items-center gap-0.5">
-            <Check className="size-2.5" aria-hidden />
-            Verified
-          </span>
-        )}
+        {listing.verified ? (
+          <TravelerVerificationBadge status="verified" className="shiply-tag" />
+        ) : null}
         {listing.categories.slice(0, 3).map((cat) => (
           <span key={cat} className="shiply-tag">
             {cat}

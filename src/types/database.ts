@@ -104,6 +104,48 @@ export type Database = {
         Update: Record<string, never>;
         Relationships: [];
       };
+      traveler_verifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          passport_url: string | null;
+          selfie_url: string | null;
+          ticket_url: string | null;
+          status: "not_submitted" | "pending" | "verified" | "rejected";
+          rejection_reason: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          passport_url?: string | null;
+          selfie_url?: string | null;
+          ticket_url?: string | null;
+          status?: "not_submitted" | "pending" | "verified" | "rejected";
+          rejection_reason?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          passport_url?: string | null;
+          selfie_url?: string | null;
+          ticket_url?: string | null;
+          status?: "not_submitted" | "pending" | "verified" | "rejected";
+          rejection_reason?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       reviews: {
         Row: {
           id: string;

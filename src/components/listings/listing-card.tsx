@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ListingTripDates } from "@/components/listings/listing-trip-dates";
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 import { Badge } from "@/components/ui/badge";
 import type { ListingCardModel } from "@/types/listing";
 import { cn } from "@/lib/utils";
@@ -64,14 +65,9 @@ export function ListingCard({ listing, className }: ListingCardProps) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {listing.verified && (
-          <Badge
-            variant="outline"
-            className="rounded-full border-brand-teal/30 bg-brand-teal/10 text-brand-teal"
-          >
-            Verified
-          </Badge>
-        )}
+        {listing.verified ? (
+          <TravelerVerificationBadge status="verified" />
+        ) : null}
         {listing.categories.slice(0, 3).map((category) => (
           <Badge
             key={category}

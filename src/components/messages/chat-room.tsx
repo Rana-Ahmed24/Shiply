@@ -8,6 +8,8 @@ import { ChatComposer } from "@/components/messages/chat-composer";
 import { MessageBubble } from "@/components/messages/message-bubble";
 import { TypingIndicator } from "@/components/messages/typing-indicator";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
+import type { TravelerVerificationStatus } from "@/types/traveler-verification";
 import { useChatChannel } from "@/hooks/use-chat-channel";
 import { markChatReadAction } from "@/lib/messages/actions";
 import { dispatchMessagesUnreadChanged } from "@/lib/messages/unread-events";
@@ -18,6 +20,7 @@ type ChatRoomMeta = {
   title: string;
   counterpartyName: string | null;
   counterpartyAvatarUrl: string | null;
+  counterpartyVerificationStatus?: TravelerVerificationStatus | null;
 };
 
 type ChatRoomProps = {
@@ -103,9 +106,14 @@ export function ChatRoom({
           className="!size-10 !text-xs rounded-xl"
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-foreground">
-            {meta.counterpartyName ?? "Chat"}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate font-semibold text-foreground">
+              {meta.counterpartyName ?? "Chat"}
+            </p>
+            {meta.counterpartyVerificationStatus === "verified" ? (
+              <TravelerVerificationBadge status="verified" className="shrink-0" />
+            ) : null}
+          </div>
           <p className="truncate text-xs text-muted-foreground">{meta.title}</p>
         </div>
       </header>

@@ -1,8 +1,5 @@
 import type { DbMatchStatus, MatchDisplayStatus } from "@/types/match";
 
-/** Minimum score (0–100) required to create a match */
-export const MIN_COMPATIBILITY_SCORE = 50;
-
 export const PLATFORM_FEE_RATE = 0.05;
 
 export const DEFAULT_AGREED_PRICE_EGP = 500;

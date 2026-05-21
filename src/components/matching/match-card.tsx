@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { MatchStatusBadge } from "@/components/matching/match-status-badge";
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { MatchCardModel } from "@/types/match";
 import { cn } from "@/lib/utils";
@@ -37,11 +38,18 @@ export function MatchCard({ match, className }: MatchCardProps) {
           </span>
         )}
         {match.counterpartyName && (
-          <span className="text-muted-foreground">
-            {match.counterpartyRoleLabel}:{" "}
-            <span className="font-medium text-foreground">
-              {match.counterpartyName}
+          <span className="flex flex-wrap items-center gap-2 text-muted-foreground">
+            <span>
+              {match.counterpartyRoleLabel}:{" "}
+              <span className="font-medium text-foreground">
+                {match.counterpartyName}
+              </span>
             </span>
+            {match.counterpartyRoleLabel === "Traveler" &&
+            "travelerVerified" in match &&
+            match.travelerVerified ? (
+              <TravelerVerificationBadge status="verified" />
+            ) : null}
           </span>
         )}
       </div>

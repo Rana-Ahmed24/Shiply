@@ -10,6 +10,7 @@ import {
 } from "@/lib/listings/db";
 import { mapListingToCard, mapListingToDetail } from "@/lib/listings/mappers";
 import { isMissingColumnError } from "@/lib/profile/db";
+import { fetchVerifiedTravelerIds } from "@/lib/verification/queries";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ListingCardModel,
@@ -124,21 +125,6 @@ async function fetchTravelers(
   return map;
 }
 
-async function fetchVerifiedTravelerIds(
-  supabase: SupabaseClient,
-  ids: string[]
-): Promise<Set<string>> {
-  if (ids.length === 0) return new Set();
-
-  const { data } = await supabase
-    .from("verifications")
-    .select("user_id")
-    .in("user_id", ids)
-    .eq("status", "approved")
-    .in("type", ["passport", "government_id", "flight_itinerary"]);
-
-  return new Set((data ?? []).map((v) => v.user_id as string));
-}
 
 function mapRowsToCards(
   rows: TravelerListingRow[],
@@ -194,7 +180,7 @@ export async function searchListings(
   const travelerIds = [...new Set(rows.map((r) => r.traveler_id))];
   const [travelers, verified] = await Promise.all([
     fetchTravelers(supabase, travelerIds),
-    fetchVerifiedTravelerIds(supabase, travelerIds),
+    fetchVerifiedTravelerIds(travelerIds),
   ]);
 
   const total = result.count ?? 0;
@@ -248,7 +234,7 @@ export async function getListingById(
 
   const row = normalizeListingRow(data as unknown as ListingRowRaw);
   const travelers = await fetchTravelers(supabase, [row.traveler_id]);
-  const verified = await fetchVerifiedTravelerIds(supabase, [row.traveler_id]);
+  const verified = await fetchVerifiedTravelerIds([row.traveler_id]);
 
   return mapListingToDetail(
     row,
@@ -287,7 +273,7 @@ export async function getTravelerListings(
   }
 
   const normalized = normalizeListingRows(rows);
-  const verified = await fetchVerifiedTravelerIds(supabase, [travelerId]);
+  const verified = await fetchVerifiedTravelerIds([travelerId]);
   const travelers = await fetchTravelers(supabase, [travelerId]);
 
   return mapRowsToCards(normalized, travelers, verified);

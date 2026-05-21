@@ -37,19 +37,12 @@ export function CompatibilityPanel({
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium">Match score</span>
-        <Badge
-          className={cn(
-            "rounded-full text-base font-semibold",
-            result.canMatch
-              ? "bg-brand-teal/15 text-brand-teal"
-              : "bg-destructive/10 text-destructive"
-          )}
-        >
+        <Badge className="rounded-full bg-brand-teal/15 text-base font-semibold text-brand-teal">
           {result.score}/100
         </Badge>
-        {!result.canMatch && (
-          <span className="text-xs text-destructive">Minimum 50 required</span>
-        )}
+        <span className="text-xs text-muted-foreground">
+          Higher is better — you can still request a match at any score.
+        </span>
       </div>
 
       <ul className="space-y-2">

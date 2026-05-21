@@ -6,6 +6,7 @@ import {
   type ProfileRowRaw,
 } from "@/lib/profile/db";
 import { createClient } from "@/lib/supabase/server";
+import { getTravelerVerification } from "@/lib/verification/queries";
 import type { PublicProfile } from "@/types/profile";
 import { hasRole } from "@/lib/auth/roles";
 
@@ -13,6 +14,7 @@ function mapProfileRow(
   row: ProfileRowRaw,
   extras: {
     verifications: PublicProfile["verifications"];
+    travelerVerification: PublicProfile["travelerVerification"];
     reviews: PublicProfile["reviews"];
     is_owner: boolean;
   }
@@ -35,6 +37,7 @@ function mapProfileRow(
     customer_review_count: normalized.customer_review_count,
     created_at: normalized.created_at,
     verifications: extras.verifications,
+    travelerVerification: extras.travelerVerification,
     reviews: extras.reviews,
     is_owner: extras.is_owner,
   };
@@ -65,9 +68,14 @@ export async function getPublicProfile(
 
   const verifications = await fetchVerifications(supabase, profileId);
   const reviews = await fetchReviews(supabase, profileId);
+  const normalized = normalizeProfileRow(profile);
+  const travelerVerification = hasRole(normalized.roles, "traveler")
+    ? await getTravelerVerification(profileId)
+    : null;
 
   return mapProfileRow(profile, {
     verifications,
+    travelerVerification,
     reviews,
     is_owner: viewerId === profileId,
   });

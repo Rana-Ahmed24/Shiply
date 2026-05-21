@@ -68,6 +68,17 @@ export function HomeDashboardHeader({ mode: serverMode }: HomeDashboardHeaderPro
           <Plane className="mr-2 size-3.5" aria-hidden />
           List a trip
         </Link>
+        {mode === "traveler" ? (
+          <Link
+            href="/verify-traveler"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-9 rounded-xl border-brand-teal/40 bg-brand-teal/5 px-4 text-brand-teal"
+            )}
+          >
+            Become verified
+          </Link>
+        ) : null}
       </div>
     </header>
   );

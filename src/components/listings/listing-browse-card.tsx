@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ListingTripDates } from "@/components/listings/listing-trip-dates";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { OwnershipDisabledCta } from "@/components/ui/ownership-disabled-cta";
@@ -35,7 +36,12 @@ export function ListingBrowseCard({
           size="md"
         />
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">{listing.travelerName ?? "Traveler"}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold">{listing.travelerName ?? "Traveler"}</p>
+            {listing.verified ? (
+              <TravelerVerificationBadge status="verified" />
+            ) : null}
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             <span>
               {listing.origin.flag} {listing.origin.city}
