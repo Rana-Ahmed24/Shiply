@@ -16,11 +16,8 @@ import type { HomeMatchItem, MatchesFeed } from "@/types/home-match";
 import type { MatchCardModel, MatchDetailModel } from "@/types/match";
 
 async function isTravelerVerified(travelerId: string): Promise<boolean> {
-  const { fetchVerifiedTravelerIds } = await import(
-    "@/lib/verification/queries"
-  );
-  const verified = await fetchVerifiedTravelerIds([travelerId]);
-  return verified.has(travelerId);
+  const { isTravelerVerifiedById } = await import("@/lib/verification/queries");
+  return isTravelerVerifiedById(travelerId);
 }
 
 export async function fetchListingForMatch(

@@ -93,16 +93,8 @@ export async function createMatchAction(
     return { error: "This request already has an active delivery match." };
   }
 
-  const supabase = await createClient();
-  const { data: verifications } = await supabase
-    .from("verifications")
-    .select("user_id")
-    .eq("user_id", listing.traveler_id)
-    .eq("status", "approved")
-    .in("type", ["passport", "government_id", "flight_itinerary"])
-    .limit(1);
-
-  const verified = (verifications?.length ?? 0) > 0;
+  const { isTravelerVerifiedById } = await import("@/lib/verification/queries");
+  const verified = await isTravelerVerifiedById(listing.traveler_id);
   const compatibility = computeCompatibility(listing, request, verified);
 
   const isCustomer = isCustomerRole;

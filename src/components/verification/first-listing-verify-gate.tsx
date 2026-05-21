@@ -20,25 +20,29 @@ const DISMISS_KEY = "shiply_skip_listing_verify_prompt";
 type FirstListingVerifyGateProps = {
   listingCount: number;
   verificationStatus: TravelerVerificationStatus;
+  /** From /listings/new?promptVerify=1 (e.g. I'm traveling CTA) */
+  forceOpen?: boolean;
   children: React.ReactNode;
 };
 
 export function FirstListingVerifyGate({
   listingCount,
   verificationStatus,
+  forceOpen = false,
   children,
 }: FirstListingVerifyGateProps) {
+  const shouldOfferVerify =
+    verificationStatus !== "verified" && verificationStatus !== "pending";
+
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (listingCount > 0) return;
-    if (verificationStatus === "verified" || verificationStatus === "pending") {
-      return;
-    }
-    if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
+    if (!shouldOfferVerify) return;
+    if (listingCount > 0 && !forceOpen) return;
+    if (!forceOpen && sessionStorage.getItem(DISMISS_KEY) === "1") return;
     setOpen(true);
-  }, [listingCount, verificationStatus]);
+  }, [listingCount, verificationStatus, shouldOfferVerify, forceOpen]);
 
   function continueWithout() {
     sessionStorage.setItem(DISMISS_KEY, "1");

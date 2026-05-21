@@ -30,10 +30,23 @@ export async function getTravelerVerification(
     console.error("[verification] getTravelerVerification:", error.message);
   }
 
-  return mapVerificationRow(
+  const view = mapVerificationRow(
     (data as TravelerVerificationRow | null) ?? null,
     userId
   );
+
+  if (view.status === "verified") return view;
+
+  const legacyVerified = await fetchLegacyVerifiedTravelerIds([userId]);
+  if (legacyVerified.has(userId)) {
+    return {
+      ...view,
+      status: "verified",
+      rejectionReason: null,
+    };
+  }
+
+  return view;
 }
 
 export async function countUserListings(userId: string): Promise<number> {
@@ -50,12 +63,20 @@ export async function countUserListings(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+/** True if traveler has Shiply verification (new table or legacy approvals). */
+export async function isTravelerVerifiedById(travelerId: string): Promise<boolean> {
+  const ids = await fetchVerifiedTravelerIds([travelerId]);
+  return ids.has(travelerId);
+}
+
 export async function fetchVerifiedTravelerIds(
   travelerIds: string[]
 ): Promise<Set<string>> {
   if (travelerIds.length === 0) return new Set();
 
+  const verified = new Set<string>();
   const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("traveler_verifications")
     .select("user_id")
@@ -63,14 +84,19 @@ export async function fetchVerifiedTravelerIds(
     .eq("status", "verified");
 
   if (error) {
-    if (isMissingTableError(error.message)) {
-      return fetchLegacyVerifiedTravelerIds(travelerIds);
+    if (!isMissingTableError(error.message)) {
+      console.error("[verification] fetchVerifiedTravelerIds:", error.message);
     }
-    console.error("[verification] fetchVerifiedTravelerIds:", error.message);
-    return new Set();
+  } else {
+    for (const row of data ?? []) {
+      verified.add(row.user_id as string);
+    }
   }
 
-  return new Set((data ?? []).map((r) => r.user_id as string));
+  const legacy = await fetchLegacyVerifiedTravelerIds(travelerIds);
+  legacy.forEach((id) => verified.add(id));
+
+  return verified;
 }
 
 async function fetchLegacyVerifiedTravelerIds(

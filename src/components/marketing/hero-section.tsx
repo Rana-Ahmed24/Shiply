@@ -59,7 +59,7 @@ export function HeroSection({ listings }: HeroSectionProps) {
                 I need something
               </Link>
               <Link
-                href="/listings/new"
+                href="/listings/new?promptVerify=1"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
                   "inline-flex items-center gap-2 rounded-xl border-border/80 bg-muted px-7 py-6 hover:bg-card-hover"

@@ -23,7 +23,7 @@ const FEED_META: Record<
     title: "Available Travelers",
     emptyTitle: "No traveler listings available yet",
     emptyHint: "List your upcoming trip or check again later.",
-    ctaHref: "/listings/new",
+    ctaHref: "/listings/new?promptVerify=1",
     ctaLabel: "List a trip",
   },
   requests: {

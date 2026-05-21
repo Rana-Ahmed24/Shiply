@@ -199,7 +199,7 @@ function EmptyState({ tab }: { tab: MatchTab }) {
           When customers send requests to your trips, they will appear here.
         </p>
         <Link
-          href="/listings/new"
+          href="/listings/new?promptVerify=1"
           className={cn(
             buttonVariants({ size: "sm" }),
             "mt-5 inline-flex rounded-xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"

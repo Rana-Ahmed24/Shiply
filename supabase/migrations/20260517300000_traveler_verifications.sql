@@ -25,9 +25,14 @@ CREATE INDEX traveler_verifications_status_idx
 
 ALTER TABLE public.traveler_verifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY traveler_verifications_select_own_or_admin
+-- Own row + admins + verified status visible to marketplace (badges, match checks)
+CREATE POLICY traveler_verifications_select_marketplace
   ON public.traveler_verifications FOR SELECT
-  USING (user_id = auth.uid() OR public.is_admin());
+  USING (
+    user_id = auth.uid()
+    OR public.is_admin()
+    OR status = 'verified'
+  );
 
 CREATE POLICY traveler_verifications_insert_own
   ON public.traveler_verifications FOR INSERT

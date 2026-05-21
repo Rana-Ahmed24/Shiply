@@ -36,13 +36,18 @@ ALTER TABLE public.traveler_verifications ENABLE ROW LEVEL SECURITY;
 
 -- Step B: Table RLS
 DROP POLICY IF EXISTS traveler_verifications_select_own_or_admin ON public.traveler_verifications;
+DROP POLICY IF EXISTS traveler_verifications_select_marketplace ON public.traveler_verifications;
 DROP POLICY IF EXISTS traveler_verifications_insert_own ON public.traveler_verifications;
 DROP POLICY IF EXISTS traveler_verifications_update_own_or_admin ON public.traveler_verifications;
 
-CREATE POLICY traveler_verifications_select_own_or_admin
+CREATE POLICY traveler_verifications_select_marketplace
   ON public.traveler_verifications
   FOR SELECT
-  USING (user_id = auth.uid() OR public.is_admin());
+  USING (
+    user_id = auth.uid()
+    OR public.is_admin()
+    OR status = 'verified'
+  );
 
 CREATE POLICY traveler_verifications_insert_own
   ON public.traveler_verifications

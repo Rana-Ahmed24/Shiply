@@ -59,7 +59,7 @@ export function HomeDashboardHeader({ mode: serverMode }: HomeDashboardHeaderPro
           Create request
         </Link>
         <Link
-          href="/listings/new"
+          href="/listings/new?promptVerify=1"
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "h-9 rounded-xl border-border/60 bg-card px-4"

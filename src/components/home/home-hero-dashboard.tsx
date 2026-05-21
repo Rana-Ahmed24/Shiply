@@ -48,7 +48,7 @@ export function HomeHeroDashboard({ featuredListings }: HomeHeroDashboardProps) 
               I need something
             </Link>
             <Link
-              href="/listings/new"
+              href="/listings/new?promptVerify=1"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
                 "inline-flex items-center justify-center gap-2 rounded-xl border-border/80 bg-muted px-7 py-3.5 text-base hover:border-border hover:bg-card-hover"
