@@ -1,16 +1,14 @@
 import { z } from "zod";
 
+import { localDateIso } from "@/lib/format/date";
 import { REQUEST_CATEGORIES, REQUEST_URGENCY_OPTIONS } from "@/lib/requests/constants";
+
+export { localDateIso };
 
 const urgencyValues = REQUEST_URGENCY_OPTIONS.map((o) => o.value) as [
   string,
   ...string[],
 ];
-
-/** Local calendar date (YYYY-MM-DD) for min-date validation */
-export function localDateIso(): string {
-  return new Date().toLocaleDateString("en-CA");
-}
 
 export const requestFormSchema = z.object({
   title: z.string().trim().min(3, "Title must be at least 3 characters").max(120),

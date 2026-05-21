@@ -17,6 +17,11 @@ import {
 } from "@/lib/verification/constants";
 import { getTravelerVerification } from "@/lib/verification/queries";
 import {
+  userOwnsVerificationFolder,
+  verificationFolderFromPath,
+  verificationStorageFolder,
+} from "@/lib/verification/folder";
+import {
   createSignedVerificationUrl,
   verificationUploadPath,
 } from "@/lib/verification/storage";
@@ -89,7 +94,17 @@ export async function uploadVerificationDocAction(
     return { error: "You are already verified." };
   }
 
-  const path = verificationUploadPath(user.id, kind, file);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .single();
+
+  const folder = verificationStorageFolder(
+    user.id,
+    profile?.full_name as string | null | undefined
+  );
+  const path = verificationUploadPath(folder, kind, file);
   const field = DOC_FIELD_NAMES[kind];
 
   const { error: uploadError } = await supabase.storage
@@ -239,8 +254,8 @@ export async function getVerificationSignedUrlAction(
   const user = await requireUser();
   const supabase = await createClient();
 
-  const folder = storagePath.split("/")[0];
-  if (folder !== user.id) {
+  const folder = verificationFolderFromPath(storagePath);
+  if (!userOwnsVerificationFolder(folder, user.id)) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("roles")

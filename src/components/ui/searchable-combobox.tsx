@@ -23,6 +23,8 @@ type SearchableComboboxProps = {
   emptyMessage?: string;
   required?: boolean;
   disabled?: boolean;
+  /** Allow typing a city/value not in the options list (min 2 characters). */
+  allowCustomValue?: boolean;
   className?: string;
 };
 
@@ -38,6 +40,7 @@ export function SearchableCombobox({
   emptyMessage = "No matches found.",
   required,
   disabled,
+  allowCustomValue = false,
   className,
 }: SearchableComboboxProps) {
   const listId = useId();
@@ -53,6 +56,17 @@ export function SearchableCombobox({
   const [query, setQuery] = useState("");
 
   const selectedOption = options.find((o) => o.value === selectedValue);
+  const displayLabel =
+    selectedOption?.label ??
+    (selectedValue ? selectedValue : undefined);
+
+  const customQuery = query.trim();
+  const showCustomOption =
+    allowCustomValue &&
+    customQuery.length >= 2 &&
+    !options.some(
+      (o) => o.value.toLowerCase() === customQuery.toLowerCase()
+    );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -126,12 +140,10 @@ export function SearchableCombobox({
           "flex h-11 w-full items-center justify-between gap-2 rounded-2xl border border-input bg-card px-3 py-2 text-left text-sm text-foreground transition-colors",
           "hover:border-ring/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
           "disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
-          !selectedOption && "text-muted-foreground"
+          !displayLabel && "text-muted-foreground"
         )}
       >
-        <span className="truncate">
-          {selectedOption?.label ?? placeholder}
-        </span>
+        <span className="truncate">{displayLabel ?? placeholder}</span>
         <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
 
@@ -156,7 +168,20 @@ export function SearchableCombobox({
             role="listbox"
             className="max-h-56 overflow-y-auto p-1"
           >
-            {filtered.length === 0 ? (
+            {showCustomOption ? (
+              <li role="option" aria-selected={selectedValue === customQuery}>
+                <button
+                  type="button"
+                  onClick={() => select(customQuery)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-foreground hover:bg-muted"
+                >
+                  <span className="flex-1 truncate">
+                    Use &ldquo;{customQuery}&rdquo;
+                  </span>
+                </button>
+              </li>
+            ) : null}
+            {filtered.length === 0 && !showCustomOption ? (
               <li className="px-3 py-6 text-center text-sm text-muted-foreground">
                 {emptyMessage}
               </li>

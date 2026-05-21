@@ -1,4 +1,5 @@
 import { EGYPT_ARRIVAL_CITIES } from "@/lib/geo/cities";
+import { CITIES_BY_COUNTRY } from "@/lib/geo/regions";
 
 /** Maps preset departure cities to ISO country codes */
 const CITY_TO_COUNTRY: Record<string, string> = {
@@ -97,7 +98,12 @@ function buildDepartureCitiesByCountry(): Record<string, string[]> {
 export const DEPARTURE_CITIES_BY_COUNTRY = buildDepartureCitiesByCountry();
 
 export function getDepartureCitiesForCountry(countryCode: string): string[] {
-  return DEPARTURE_CITIES_BY_COUNTRY[countryCode.toUpperCase()] ?? [];
+  const code = countryCode.toUpperCase();
+  const merged = new Set<string>([
+    ...(DEPARTURE_CITIES_BY_COUNTRY[code] ?? []),
+    ...(CITIES_BY_COUNTRY[code] ?? []),
+  ]);
+  return [...merged].sort((a, b) => a.localeCompare(b));
 }
 
 export function pickOriginCityForCountry(
@@ -106,5 +112,6 @@ export function pickOriginCityForCountry(
 ): string {
   const cities = getDepartureCitiesForCountry(countryCode);
   if (currentCity && cities.includes(currentCity)) return currentCity;
-  return cities[0] ?? "";
+  if (cities.length > 0) return cities[0];
+  return "";
 }

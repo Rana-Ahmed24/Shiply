@@ -28,7 +28,9 @@ import {
   pickOriginCityForCountry,
 } from "@/lib/geo/cities-by-country";
 import { Button } from "@/components/ui/button";
+import { DateInput } from "@/components/ui/date-input";
 import { Input } from "@/components/ui/input";
+import { localDateIso, minSelectableDateIso } from "@/lib/format/date";
 import { Label } from "@/components/ui/label";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import { Select } from "@/components/ui/select";
@@ -79,6 +81,11 @@ export function ListingForm({ listing }: ListingFormProps) {
   const [values, setValues] = useState<ListingFormValues>(initial);
 
   const canSubmit = isListingFormValuesComplete(values);
+  const today = useMemo(() => localDateIso(), []);
+  const minArrivalDate = useMemo(
+    () => minSelectableDateIso(values.departureDate || undefined),
+    [values.departureDate]
+  );
 
   const set =
     (key: keyof ListingFormValues) =>
@@ -89,6 +96,26 @@ export function ListingForm({ listing }: ListingFormProps) {
     ) => {
       setValues((prev) => ({ ...prev, [key]: e.target.value }));
     };
+
+  function handleDepartureDateChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const departureDate = e.target.value;
+    setValues((prev) => {
+      const next = { ...prev, departureDate };
+      if (
+        prev.arrivalDate &&
+        departureDate &&
+        prev.arrivalDate < departureDate
+      ) {
+        next.arrivalDate = "";
+      }
+      if (prev.arrivalDate && prev.arrivalDate < today) {
+        next.arrivalDate = "";
+      }
+      return next;
+    });
+  }
 
   const countryOptions = useMemo(
     () =>
@@ -152,15 +179,23 @@ export function ListingForm({ listing }: ListingFormProps) {
               id="originCity"
               name="originCity"
               required
+              allowCustomValue
               value={values.originCity}
               onValueChange={(v) =>
                 setValues((prev) => ({ ...prev, originCity: v }))
               }
               options={departureCityOptions}
-              placeholder="Select city"
-              searchPlaceholder="Search cities in this country…"
-              emptyMessage="No cities listed for this country yet."
-              disabled={departureCityOptions.length === 0}
+              placeholder={
+                departureCityOptions.length > 0
+                  ? "Select or search city"
+                  : "Type your departure city"
+              }
+              searchPlaceholder={
+                departureCityOptions.length > 0
+                  ? "Search cities in this country…"
+                  : "Enter departure city name…"
+              }
+              emptyMessage="Type at least 2 characters, then choose “Use …” below."
             />
             <FieldError messages={state.fieldErrors?.originCity} />
           </div>
@@ -188,25 +223,22 @@ export function ListingForm({ listing }: ListingFormProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="departureDate">Departure (optional)</Label>
-            <Input
+            <DateInput
               id="departureDate"
               name="departureDate"
-              type="date"
               value={values.departureDate}
-              onChange={set("departureDate")}
-              className="h-11 rounded-2xl"
+              onChange={handleDepartureDateChange}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="arrivalDate">Arrival in Egypt</Label>
-            <Input
+            <DateInput
               id="arrivalDate"
               name="arrivalDate"
-              type="date"
               required
+              minDate={minArrivalDate}
               value={values.arrivalDate}
               onChange={set("arrivalDate")}
-              className="h-11 rounded-2xl"
             />
             <FieldError messages={state.fieldErrors?.arrivalDate} />
           </div>

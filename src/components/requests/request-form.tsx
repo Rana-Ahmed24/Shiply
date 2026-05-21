@@ -22,8 +22,9 @@ import {
   isRequestFormValuesComplete,
   type RequestFormValues,
 } from "@/lib/requests/form-values";
-import { localDateIso } from "@/lib/requests/schemas";
+import { localDateIso } from "@/lib/format/date";
 import { Button } from "@/components/ui/button";
+import { DateInput } from "@/components/ui/date-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhotoFileField } from "@/components/ui/photo-file-field";
@@ -296,13 +297,10 @@ export function RequestForm({ request }: RequestFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="neededBy">Needed by (optional)</Label>
-            <Input
+            <DateInput
               id="neededBy"
-              type="date"
-              min={minNeededBy}
               value={values.neededBy}
               onChange={set("neededBy")}
-              className="h-11 rounded-2xl"
             />
             <FieldError messages={state.fieldErrors?.neededBy} />
           </div>

@@ -8,9 +8,11 @@ import { useRouter } from "next/navigation";
 import { useActionStateToast } from "@/hooks/use-action-state-toast";
 import { VerificationDocUpload } from "@/components/verification/verification-doc-upload";
 import { VerificationProgress } from "@/components/verification/verification-progress";
+import { VerificationDetailsPanel } from "@/components/verification/verification-details-panel";
 import { VerificationStatusBanner } from "@/components/verification/verification-status-banner";
 import { submitTravelerVerificationAction } from "@/lib/verification/actions";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { TravelerVerificationView } from "@/types/traveler-verification";
 
 const STEPS = [
@@ -22,6 +24,7 @@ const STEPS = [
 
 type TravelerVerificationWizardProps = {
   initial: TravelerVerificationView;
+  backHref?: string;
 };
 
 function SubmitButton({ canSubmit }: { canSubmit: boolean }) {
@@ -39,6 +42,7 @@ function SubmitButton({ canSubmit }: { canSubmit: boolean }) {
 
 export function TravelerVerificationWizard({
   initial,
+  backHref = "/listings/new",
 }: TravelerVerificationWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -62,9 +66,19 @@ export function TravelerVerificationWizard({
   if (initial.status === "pending" || initial.status === "verified") {
     return (
       <div className="space-y-6">
-        <VerificationStatusBanner verification={initial} />
-        <Link href="/" className="text-sm text-brand-teal hover:underline">
-          Back to home
+        <VerificationStatusBanner
+          verification={initial}
+          showStatusLink={false}
+        />
+        <VerificationDetailsPanel verification={initial} />
+        <Link
+          href={backHref}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "inline-flex rounded-2xl"
+          )}
+        >
+          Back to create listing
         </Link>
       </div>
     );

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { localDateIso } from "@/lib/format/date";
 import {
   ARRIVAL_CITIES,
   DELIVERY_PREFERENCES,
@@ -22,8 +23,20 @@ export const listingFormSchema = z
         (v) => ARRIVAL_CITIES.includes(v as (typeof ARRIVAL_CITIES)[number]),
         "Select an arrival city in Egypt"
       ),
-    departureDate: z.string().optional(),
-    arrivalDate: z.string().min(1, "Arrival date is required"),
+    departureDate: z
+      .string()
+      .optional()
+      .refine(
+        (v) => !v || v >= localDateIso(),
+        "Departure cannot be before today"
+      ),
+    arrivalDate: z
+      .string()
+      .min(1, "Arrival date is required")
+      .refine(
+        (v) => v >= localDateIso(),
+        "Arrival cannot be before today"
+      ),
     availableWeightKg: z.coerce
       .number()
       .positive("Capacity must be greater than 0")

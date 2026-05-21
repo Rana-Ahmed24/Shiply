@@ -6,13 +6,6 @@ import {
   TRAVELER_VERIFICATION_BUCKET,
 } from "@/lib/verification/constants";
 
-export function verificationStoragePath(
-  userId: string,
-  kind: TravelerVerificationDocKind
-): string {
-  return `${userId}/${DOC_FILE_NAMES[kind]}`;
-}
-
 export function extensionFromFile(file: File): string {
   const ext = file.name.split(".").pop()?.toLowerCase();
   if (ext === "png") return "png";
@@ -23,13 +16,13 @@ export function extensionFromFile(file: File): string {
 
 /** Path with correct extension for uploads (overwrites canonical name per kind). */
 export function verificationUploadPath(
-  userId: string,
+  folder: string,
   kind: TravelerVerificationDocKind,
   file: File
 ): string {
   const ext = extensionFromFile(file);
   const base = DOC_FILE_NAMES[kind].replace(/\.[^.]+$/, "");
-  return `${userId}/${base}.${ext}`;
+  return `${folder}/${base}.${ext}`;
 }
 
 export async function createSignedVerificationUrl(

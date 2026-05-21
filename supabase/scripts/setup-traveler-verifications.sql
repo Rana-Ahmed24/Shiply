@@ -87,6 +87,19 @@ DROP POLICY IF EXISTS traveler_verifications_storage_insert ON storage.objects;
 DROP POLICY IF EXISTS traveler_verifications_storage_update ON storage.objects;
 DROP POLICY IF EXISTS traveler_verifications_storage_delete ON storage.objects;
 
+CREATE OR REPLACE FUNCTION public.verification_storage_folder_allowed(folder text)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT
+    folder = auth.uid()::text
+    OR (
+      strpos(folder, '__') > 0
+      AND split_part(folder, '__', 2) = auth.uid()::text
+    );
+$$;
+
 CREATE POLICY traveler_verifications_storage_select
   ON storage.objects
   FOR SELECT
@@ -94,7 +107,7 @@ CREATE POLICY traveler_verifications_storage_select
   USING (
     bucket_id = 'traveler-verifications'
     AND (
-      (storage.foldername(name))[1] = auth.uid()::text
+      public.verification_storage_folder_allowed((storage.foldername(name))[1])
       OR public.is_admin()
     )
   );
@@ -105,7 +118,7 @@ CREATE POLICY traveler_verifications_storage_insert
   TO authenticated
   WITH CHECK (
     bucket_id = 'traveler-verifications'
-    AND (storage.foldername(name))[1] = auth.uid()::text
+    AND public.verification_storage_folder_allowed((storage.foldername(name))[1])
   );
 
 CREATE POLICY traveler_verifications_storage_update
@@ -114,11 +127,11 @@ CREATE POLICY traveler_verifications_storage_update
   TO authenticated
   USING (
     bucket_id = 'traveler-verifications'
-    AND (storage.foldername(name))[1] = auth.uid()::text
+    AND public.verification_storage_folder_allowed((storage.foldername(name))[1])
   )
   WITH CHECK (
     bucket_id = 'traveler-verifications'
-    AND (storage.foldername(name))[1] = auth.uid()::text
+    AND public.verification_storage_folder_allowed((storage.foldername(name))[1])
   );
 
 CREATE POLICY traveler_verifications_storage_delete
@@ -127,5 +140,5 @@ CREATE POLICY traveler_verifications_storage_delete
   TO authenticated
   USING (
     bucket_id = 'traveler-verifications'
-    AND (storage.foldername(name))[1] = auth.uid()::text
+    AND public.verification_storage_folder_allowed((storage.foldername(name))[1])
   );

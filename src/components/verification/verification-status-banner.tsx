@@ -8,11 +8,14 @@ import { cn } from "@/lib/utils";
 type VerificationStatusBannerProps = {
   verification: TravelerVerificationView;
   className?: string;
+  /** When false (e.g. on /verify-traveler), hide link — details are on the same page */
+  showStatusLink?: boolean;
 };
 
 export function VerificationStatusBanner({
   verification,
   className,
+  showStatusLink = true,
 }: VerificationStatusBannerProps) {
   const { status, rejectionReason } = verification;
 
@@ -81,14 +84,17 @@ export function VerificationStatusBanner({
           </Link>
         </>
       )}
-      {(status === "pending" || status === "verified") && (
+      {showStatusLink && (status === "pending" || status === "verified") ? (
         <Link
           href="/verify-traveler"
-          className="mt-3 block text-sm text-brand-teal hover:underline"
+          className={cn(
+            buttonVariants({ size: "sm", variant: "outline" }),
+            "mt-4 inline-flex rounded-xl"
+          )}
         >
-          View verification details
+          View verification status
         </Link>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { isDateBeforeToday } from "@/lib/format/date";
 import { LISTING_CATEGORIES } from "@/lib/listings/constants";
 import { pickOriginCityForCountry } from "@/lib/geo/cities-by-country";
 import type { ListingDetail } from "@/types/listing";
@@ -58,6 +59,10 @@ export function isListingFormValuesComplete(
   if (!originCity || originCity.length < 2) return false;
   if (!values.destinationCity) return false;
   if (!values.arrivalDate) return false;
+  if (isDateBeforeToday(values.arrivalDate)) return false;
+  if (values.departureDate && isDateBeforeToday(values.departureDate)) {
+    return false;
+  }
 
   const weight = values.availableWeightKg.trim();
   if (!weight || Number(weight) <= 0) return false;

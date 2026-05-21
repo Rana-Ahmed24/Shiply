@@ -51,12 +51,6 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
               Verify traveler account
             </Link>
           ) : null}
-          <Link
-            href="/"
-            className={cn(buttonVariants({ variant: "outline" }), "rounded-2xl")}
-          >
-            Back to home
-          </Link>
         </div>
       </div>
 
