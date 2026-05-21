@@ -3,6 +3,7 @@ export const TRAVELER_VERIFICATION_STATUSES = [
   "pending",
   "verified",
   "rejected",
+  "invalid",
 ] as const;
 
 export type TravelerVerificationStatus =

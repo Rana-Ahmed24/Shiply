@@ -57,10 +57,13 @@ export function mapAuthError(message: string, code?: string): string {
     return "Too many attempts from this app. Please wait a few minutes and try again.";
   }
   if (normalized.includes("bucket not found")) {
+    if (normalized.includes("traveler-verification")) {
+      return "Storage bucket traveler-verifications is missing. Run supabase/scripts/setup-traveler-verifications.sql in the Supabase SQL Editor.";
+    }
     return "Image storage bucket request-images is missing. Create it in Supabase → Storage (public bucket) or run supabase/scripts/setup-request-images-storage.sql in the SQL Editor.";
   }
   if (normalized.includes("row-level security")) {
-    return "Image upload was blocked by storage security rules. Run supabase/scripts/fix-request-images-storage-policies.sql in the Supabase SQL Editor, then try again.";
+    return "Upload was blocked by storage security rules. Run supabase/scripts/fix-traveler-verifications-storage-policies.sql in the Supabase SQL Editor, then try again.";
   }
   if (
     normalized.includes("foreign key") ||

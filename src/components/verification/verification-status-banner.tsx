@@ -63,6 +63,23 @@ export function VerificationStatusBanner({
           listings and matches.
         </p>
       )}
+      {status === "invalid" && (
+        <>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Required verification documents are missing from storage. Re-upload
+            your passport, selfie, and flight ticket, then submit again.
+          </p>
+          <Link
+            href="/verify-traveler"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "mt-4 inline-flex rounded-xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
+            )}
+          >
+            Fix verification
+          </Link>
+        </>
+      )}
       {status === "rejected" && (
         <>
           {rejectionReason ? (

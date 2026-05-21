@@ -1,6 +1,15 @@
 import "server-only";
 
-import { mapVerificationRow } from "@/lib/verification/mappers";
+import { unstable_noStore as noStore } from "next/cache";
+
+import {
+  checkTravelerVerificationIntegrity,
+  filterVerifiedTravelerIds,
+} from "@/lib/verification/integrity";
+import {
+  applyIntegrityToVerificationView,
+  mapVerificationRow,
+} from "@/lib/verification/mappers";
 import { createClient } from "@/lib/supabase/server";
 import type {
   AdminVerificationQueueItem,
@@ -19,6 +28,8 @@ function isMissingTableError(message: string): boolean {
 export async function getTravelerVerification(
   userId: string
 ): Promise<TravelerVerificationView> {
+  noStore();
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("traveler_verifications")
@@ -30,23 +41,31 @@ export async function getTravelerVerification(
     console.error("[verification] getTravelerVerification:", error.message);
   }
 
-  const view = mapVerificationRow(
-    (data as TravelerVerificationRow | null) ?? null,
-    userId
-  );
+  const row = (data as TravelerVerificationRow | null) ?? null;
 
-  if (view.status === "verified") return view;
+  let effectiveRow = row;
+  let integrity = await checkTravelerVerificationIntegrity(userId, {
+    repair: true,
+    row: effectiveRow,
+    log: true,
+  });
 
-  const legacyVerified = await fetchLegacyVerifiedTravelerIds([userId]);
-  if (legacyVerified.has(userId)) {
-    return {
-      ...view,
-      status: "verified",
-      rejectionReason: null,
-    };
+  if (integrity.repaired) {
+    const { data: refreshed } = await supabase
+      .from("traveler_verifications")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    effectiveRow = (refreshed as TravelerVerificationRow | null) ?? row;
+    integrity = await checkTravelerVerificationIntegrity(userId, {
+      repair: false,
+      row: effectiveRow,
+      log: false,
+    });
   }
 
-  return view;
+  const view = mapVerificationRow(effectiveRow, userId);
+  return applyIntegrityToVerificationView(view, integrity);
 }
 
 export async function countUserListings(userId: string): Promise<number> {
@@ -63,8 +82,9 @@ export async function countUserListings(userId: string): Promise<number> {
   return count ?? 0;
 }
 
-/** True if traveler has Shiply verification (new table or legacy approvals). */
+/** True only when DB status is verified and all storage files exist. */
 export async function isTravelerVerifiedById(travelerId: string): Promise<boolean> {
+  noStore();
   const ids = await fetchVerifiedTravelerIds([travelerId]);
   return ids.has(travelerId);
 }
@@ -72,69 +92,46 @@ export async function isTravelerVerifiedById(travelerId: string): Promise<boolea
 export async function fetchVerifiedTravelerIds(
   travelerIds: string[]
 ): Promise<Set<string>> {
-  if (travelerIds.length === 0) return new Set();
-
-  const verified = new Set<string>();
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("traveler_verifications")
-    .select("user_id")
-    .in("user_id", travelerIds)
-    .eq("status", "verified");
-
-  if (error) {
-    if (!isMissingTableError(error.message)) {
-      console.error("[verification] fetchVerifiedTravelerIds:", error.message);
-    }
-  } else {
-    for (const row of data ?? []) {
-      verified.add(row.user_id as string);
-    }
-  }
-
-  const legacy = await fetchLegacyVerifiedTravelerIds(travelerIds);
-  legacy.forEach((id) => verified.add(id));
-
-  return verified;
-}
-
-async function fetchLegacyVerifiedTravelerIds(
-  travelerIds: string[]
-): Promise<Set<string>> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("verifications")
-    .select("user_id")
-    .in("user_id", travelerIds)
-    .eq("status", "approved")
-    .in("type", ["passport", "government_id", "flight_itinerary"]);
-
-  return new Set((data ?? []).map((v) => v.user_id as string));
+  return filterVerifiedTravelerIds(travelerIds);
 }
 
 export async function fetchVerificationStatusMap(
   travelerIds: string[]
 ): Promise<Map<string, TravelerVerificationStatus>> {
+  noStore();
   const map = new Map<string, TravelerVerificationStatus>();
   if (travelerIds.length === 0) return map;
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("traveler_verifications")
-    .select("user_id, status")
+    .select("*")
     .in("user_id", travelerIds);
 
-  if (error) {
-    if (!isMissingTableError(error.message)) {
-      console.error("[verification] fetchVerificationStatusMap:", error.message);
-    }
-    return map;
+  if (error && !isMissingTableError(error.message)) {
+    console.error("[verification] fetchVerificationStatusMap:", error.message);
   }
 
-  for (const row of data ?? []) {
-    map.set(row.user_id as string, row.status as TravelerVerificationStatus);
+  const rows = (data ?? []) as TravelerVerificationRow[];
+
+  await Promise.all(
+    rows.map(async (row) => {
+      const integrity = await checkTravelerVerificationIntegrity(row.user_id, {
+        repair: true,
+        row,
+        log: false,
+      });
+      map.set(
+        row.user_id,
+        integrity.isVerified ? "verified" : integrity.dbStatus
+      );
+    })
+  );
+
+  for (const id of travelerIds) {
+    if (!map.has(id)) map.set(id, "not_submitted");
   }
+
   return map;
 }
 
@@ -147,7 +144,7 @@ export async function getAdminVerificationQueue(): Promise<
     .select(
       "id, user_id, status, rejection_reason, created_at, passport_url, selfie_url, ticket_url"
     )
-    .in("status", ["pending", "verified", "rejected"])
+    .in("status", ["pending", "verified", "rejected", "invalid"])
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -214,4 +211,12 @@ export async function getAdminSignedDocUrls(
   ]);
 
   return { passport, selfie, ticket };
+}
+
+/** Run on session restore for travelers (repairs stale verified rows). */
+export async function runTravelerVerificationIntegrityForSession(
+  userId: string
+): Promise<void> {
+  noStore();
+  await checkTravelerVerificationIntegrity(userId, { repair: true, log: false });
 }

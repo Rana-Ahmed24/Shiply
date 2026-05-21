@@ -1,3 +1,4 @@
+import type { VerificationIntegrityResult } from "@/lib/verification/integrity";
 import type {
   TravelerVerificationRow,
   TravelerVerificationView,
@@ -37,5 +38,22 @@ export function mapVerificationRow(
     hasPassport: Boolean(row.passport_url),
     hasSelfie: Boolean(row.selfie_url),
     hasTicket: Boolean(row.ticket_url),
+  };
+}
+
+/** Upload flags reflect real storage files, not stale DB paths. */
+export function applyIntegrityToVerificationView(
+  view: TravelerVerificationView,
+  integrity: VerificationIntegrityResult
+): TravelerVerificationView {
+  return {
+    ...view,
+    status: integrity.dbStatus,
+    hasPassport: integrity.filesExist.passport,
+    hasSelfie: integrity.filesExist.selfie,
+    hasTicket: integrity.filesExist.ticket,
+    passportPath: integrity.filesExist.passport ? integrity.paths.passport : null,
+    selfiePath: integrity.filesExist.selfie ? integrity.paths.selfie : null,
+    ticketPath: integrity.filesExist.ticket ? integrity.paths.ticket : null,
   };
 }

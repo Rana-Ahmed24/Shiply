@@ -10,8 +10,10 @@ import {
 } from "@/lib/auth/config";
 import { isBenignAuthError } from "@/lib/auth/errors";
 import type { AuthSession, Profile } from "@/lib/auth/session";
+import { hasRole, type UserRole } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { runTravelerVerificationIntegrityForSession } from "@/lib/verification/queries";
 
 export async function getUser(): Promise<User | null> {
   if (!hasSupabaseEnv()) return null;
@@ -53,6 +55,11 @@ export async function getSession(): Promise<AuthSession | null> {
   if (!user) return null;
 
   const profile = await getProfile(user.id);
+
+  if (profile && hasRole(profile.roles as UserRole[], "traveler")) {
+    await runTravelerVerificationIntegrityForSession(user.id);
+  }
+
   return { user, profile };
 }
 

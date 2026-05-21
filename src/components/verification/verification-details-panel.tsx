@@ -1,3 +1,5 @@
+"use client";
+
 import { Check, X } from "lucide-react";
 
 import { formatShortDateUtc } from "@/lib/format/date";
@@ -11,15 +13,17 @@ type VerificationDetailsPanelProps = {
 
 function DocRow({ label, uploaded }: { label: string; uploaded: boolean }) {
   return (
-    <li className="flex items-center gap-2 text-sm">
-      {uploaded ? (
-        <Check className="size-4 shrink-0 text-brand-teal" aria-hidden />
-      ) : (
-        <X className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-      )}
-      <span className={uploaded ? "text-foreground" : "text-muted-foreground"}>
-        {label}: {uploaded ? "Uploaded" : "Not uploaded"}
-      </span>
+    <li className="rounded-xl border border-border/60 bg-card/50 px-3 py-2.5">
+      <div className="flex items-center gap-2 text-sm">
+        {uploaded ? (
+          <Check className="size-4 shrink-0 text-brand-teal" aria-hidden />
+        ) : (
+          <X className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+        )}
+        <span className={uploaded ? "text-foreground" : "text-muted-foreground"}>
+          {label}: {uploaded ? "Uploaded" : "Not uploaded"}
+        </span>
+      </div>
     </li>
   );
 }
@@ -71,6 +75,14 @@ export function VerificationDetailsPanel({
             <dd className="font-medium text-foreground">In progress</dd>
           </div>
         ) : null}
+        {status === "invalid" ? (
+          <div>
+            <dt className="text-muted-foreground">Review status</dt>
+            <dd className="font-medium text-amber-700 dark:text-amber-300">
+              Incomplete — re-upload required
+            </dd>
+          </div>
+        ) : null}
       </dl>
 
       <p className="mt-4 text-sm font-medium text-foreground">Documents</p>
@@ -82,8 +94,15 @@ export function VerificationDetailsPanel({
 
       {status === "pending" ? (
         <p className="mt-4 text-sm text-muted-foreground">
-          You cannot change documents while your application is under review.
-          We will email you when the review is complete.
+          Your application is under review. Use <span className="font-medium text-foreground">Edit</span> below to
+          withdraw review and replace documents, then submit again.
+        </p>
+      ) : null}
+
+      {status === "verified" ? (
+        <p className="mt-4 text-sm text-muted-foreground">
+          Use <span className="font-medium text-foreground">Edit</span> below if you need to
+          replace your verification documents.
         </p>
       ) : null}
     </section>

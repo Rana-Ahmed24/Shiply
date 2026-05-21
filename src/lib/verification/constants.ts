@@ -25,3 +25,14 @@ export const DOC_FIELD_NAMES: Record<
   selfie: "selfie_url",
   ticket: "ticket_url",
 };
+
+/** Storage object basename must match document kind (passport / selfie / ticket). */
+export function verificationPathMatchesKind(
+  path: string | null,
+  kind: TravelerVerificationDocKind
+): boolean {
+  if (!path?.trim()) return false;
+  const filename = path.split("/").pop()?.toLowerCase() ?? "";
+  const prefix = DOC_FILE_NAMES[kind].replace(/\.[^.]+$/, "").toLowerCase();
+  return filename.startsWith(prefix);
+}

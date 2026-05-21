@@ -111,7 +111,7 @@ export type Database = {
           passport_url: string | null;
           selfie_url: string | null;
           ticket_url: string | null;
-          status: "not_submitted" | "pending" | "verified" | "rejected";
+          status: "not_submitted" | "pending" | "verified" | "rejected" | "invalid";
           rejection_reason: string | null;
           reviewed_by: string | null;
           reviewed_at: string | null;

@@ -25,6 +25,7 @@ import {
   createSignedVerificationUrl,
   verificationUploadPath,
 } from "@/lib/verification/storage";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelerVerificationDocKind } from "@/types/traveler-verification";
 import { z } from "zod";
@@ -53,6 +54,51 @@ async function ensureVerificationRow(
   }
 
   return getTravelerVerification(userId);
+}
+
+function isStorageRlsError(message: string): boolean {
+  return message.toLowerCase().includes("row-level security");
+}
+
+async function uploadVerificationObject(
+  userId: string,
+  storagePath: string,
+  file: File
+): Promise<{ error: string | null }> {
+  const folder = verificationFolderFromPath(storagePath);
+  if (!userOwnsVerificationFolder(folder, userId)) {
+    return { error: "Invalid upload path." };
+  }
+
+  const options = {
+    contentType: file.type || undefined,
+    upsert: true as const,
+  };
+
+  const supabase = await createClient();
+  const { error: clientError } = await supabase.storage
+    .from(TRAVELER_VERIFICATION_BUCKET)
+    .upload(storagePath, file, options);
+
+  if (!clientError) return { error: null };
+
+  if (!isStorageRlsError(clientError.message)) {
+    return { error: mapAuthError(clientError.message) };
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { error: adminError } = await admin.storage
+      .from(TRAVELER_VERIFICATION_BUCKET)
+      .upload(storagePath, file, options);
+
+    if (adminError) {
+      return { error: mapAuthError(adminError.message) };
+    }
+    return { error: null };
+  } catch {
+    return { error: mapAuthError(clientError.message) };
+  }
 }
 
 export async function uploadVerificationDocAction(
@@ -107,22 +153,21 @@ export async function uploadVerificationDocAction(
   const path = verificationUploadPath(folder, kind, file);
   const field = DOC_FIELD_NAMES[kind];
 
-  const { error: uploadError } = await supabase.storage
-    .from(TRAVELER_VERIFICATION_BUCKET)
-    .upload(path, file, {
-      contentType: file.type || undefined,
-      upsert: true,
-    });
+  const { error: uploadError } = await uploadVerificationObject(
+    user.id,
+    path,
+    file
+  );
 
   if (uploadError) {
-    return { error: mapAuthError(uploadError.message) };
+    return { error: uploadError };
   }
 
   const { error: updateError } = await supabase
     .from("traveler_verifications")
     .update({
       [field]: path,
-      ...(view.status === "rejected"
+      ...(view.status === "rejected" || view.status === "invalid"
         ? { status: "not_submitted", rejection_reason: null }
         : {}),
     })
@@ -135,6 +180,139 @@ export async function uploadVerificationDocAction(
   revalidatePath("/verify-traveler");
   revalidatePath("/profile");
   return { success: "Document uploaded." };
+}
+
+/** Clear all verification files (storage + DB) so the traveler uploads from scratch. */
+export async function resetTravelerVerificationAction(): Promise<AuthActionState> {
+  const user = await requireUser("/login?redirectTo=/verify-traveler");
+  const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .single();
+
+  const folderCandidates = new Set([
+    user.id,
+    verificationStorageFolder(
+      user.id,
+      profile?.full_name as string | null | undefined
+    ),
+  ]);
+
+  try {
+    const admin = createAdminClient();
+    for (const folder of folderCandidates) {
+      const { data: listed } = await admin.storage
+        .from(TRAVELER_VERIFICATION_BUCKET)
+        .list(folder);
+      const paths = (listed ?? [])
+        .filter((item) => item.name && !item.name.endsWith("/"))
+        .map((item) => `${folder}/${item.name}`);
+      if (paths.length > 0) {
+        await admin.storage.from(TRAVELER_VERIFICATION_BUCKET).remove(paths);
+      }
+    }
+
+    const { error } = await admin
+      .from("traveler_verifications")
+      .update({
+        passport_url: null,
+        selfie_url: null,
+        ticket_url: null,
+        status: "not_submitted",
+        rejection_reason: null,
+        reviewed_by: null,
+        reviewed_at: null,
+      })
+      .eq("user_id", user.id);
+
+    if (error) {
+      return { error: mapAuthError(error.message) };
+    }
+  } catch (err) {
+    console.error("[verification] reset:", err);
+    return {
+      error:
+        "Could not reset verification. Ensure SUPABASE_SERVICE_ROLE_KEY is set, or clear files in Supabase Storage manually.",
+    };
+  }
+
+  revalidatePath("/verify-traveler");
+  revalidatePath("/profile");
+  revalidatePath("/admin/verifications");
+  revalidatePath("/");
+
+  return {
+    success: "Verification cleared. Upload passport, selfie, and ticket again.",
+  };
+}
+
+/** Withdraw pending/verified review so the traveler can replace documents. */
+export async function beginVerificationEditAction(): Promise<AuthActionState> {
+  const user = await requireUser("/login?redirectTo=/verify-traveler");
+  const supabase = await createClient();
+
+  const { data: row, error: fetchError } = await supabase
+    .from("traveler_verifications")
+    .select("id, status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (fetchError || !row) {
+    return { error: "Verification record not found." };
+  }
+
+  const status = row.status as string;
+  if (
+    status !== "pending" &&
+    status !== "verified" &&
+    status !== "invalid"
+  ) {
+    return { success: "You can already edit your documents below." };
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("traveler_verifications")
+      .update({
+        status: "not_submitted",
+        rejection_reason: null,
+        reviewed_by: null,
+        reviewed_at: null,
+      })
+      .eq("user_id", user.id);
+
+    if (error) {
+      return { error: mapAuthError(error.message) };
+    }
+  } catch {
+    const { error } = await supabase
+      .from("traveler_verifications")
+      .update({
+        status: "not_submitted",
+        rejection_reason: null,
+        reviewed_by: null,
+        reviewed_at: null,
+      })
+      .eq("user_id", user.id);
+
+    if (error) {
+      return { error: mapAuthError(error.message) };
+    }
+  }
+
+  revalidatePath("/verify-traveler");
+  revalidatePath("/profile");
+  revalidatePath("/admin/verifications");
+  revalidatePath("/");
+
+  return {
+    success:
+      "You can now update your documents. Submit again when everything is ready.",
+  };
 }
 
 export async function submitTravelerVerificationAction(
@@ -193,6 +371,31 @@ export async function approveVerificationAction(
   await requireAdmin();
   const supabase = await createClient();
   const user = await requireUser();
+
+  const { data: row, error: fetchError } = await supabase
+    .from("traveler_verifications")
+    .select("*")
+    .eq("id", verificationId)
+    .maybeSingle();
+
+  if (fetchError || !row) {
+    return { error: "Verification record not found." };
+  }
+
+  const { checkTravelerVerificationIntegrity } = await import(
+    "@/lib/verification/integrity"
+  );
+  const integrity = await checkTravelerVerificationIntegrity(
+    row.user_id as string,
+    { repair: false, row: row as import("@/types/traveler-verification").TravelerVerificationRow, log: true }
+  );
+
+  if (!integrity.allPathsPresent || !integrity.allFilesExist) {
+    return {
+      error:
+        "Cannot approve: passport, selfie, and ticket must exist in storage.",
+    };
+  }
 
   const { error } = await supabase
     .from("traveler_verifications")

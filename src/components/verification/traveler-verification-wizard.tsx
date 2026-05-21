@@ -2,17 +2,17 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useActionStateToast } from "@/hooks/use-action-state-toast";
 import { VerificationDocUpload } from "@/components/verification/verification-doc-upload";
-import { VerificationProgress } from "@/components/verification/verification-progress";
 import { VerificationDetailsPanel } from "@/components/verification/verification-details-panel";
+import { ResetVerificationButton } from "@/components/verification/reset-verification-button";
 import { VerificationStatusBanner } from "@/components/verification/verification-status-banner";
+import { VerificationStepNav } from "@/components/verification/verification-step-nav";
+import { VerificationWizardFooter } from "@/components/verification/verification-wizard-footer";
 import { submitTravelerVerificationAction } from "@/lib/verification/actions";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { TravelerVerificationView } from "@/types/traveler-verification";
 
 const STEPS = [
@@ -61,25 +61,19 @@ export function TravelerVerificationWizard({
 
   const locked =
     initial.status === "pending" || initial.status === "verified";
-  const canEdit = !locked;
+  const showDetailsPanel = initial.status !== "not_submitted";
 
-  if (initial.status === "pending" || initial.status === "verified") {
+  if (locked) {
     return (
       <div className="space-y-6">
         <VerificationStatusBanner
           verification={initial}
           showStatusLink={false}
         />
-        <VerificationDetailsPanel verification={initial} />
-        <Link
-          href={backHref}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "inline-flex rounded-2xl"
-          )}
-        >
-          Back to create listing
-        </Link>
+        {showDetailsPanel ? (
+          <VerificationDetailsPanel verification={initial} />
+        ) : null}
+        <VerificationWizardFooter backHref={backHref} showEdit />
       </div>
     );
   }
@@ -90,35 +84,28 @@ export function TravelerVerificationWizard({
 
   return (
     <div className="space-y-8">
-      {initial.status === "rejected" ? (
+      {initial.status === "rejected" || initial.status === "invalid" ? (
         <VerificationStatusBanner verification={initial} />
       ) : null}
 
-      <VerificationProgress
-        hasPassport={initial.hasPassport}
-        hasSelfie={initial.hasSelfie}
-        hasTicket={initial.hasTicket}
-      />
+      {showDetailsPanel ? (
+        <VerificationDetailsPanel verification={initial} />
+      ) : null}
 
-      <nav className="flex flex-wrap gap-2" aria-label="Verification steps">
-        {STEPS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            disabled={!canEdit && s.id !== 4}
-            onClick={() => setStep(s.id)}
-            className={
-              step === s.id
-                ? "rounded-full bg-brand-gold/20 px-3 py-1 text-sm font-medium text-brand-gold"
-                : "rounded-full border border-border/80 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            }
-          >
-            {s.id}. {s.title}
-          </button>
-        ))}
-      </nav>
+      {(initial.status === "invalid" || initial.status === "rejected") && (
+        <ResetVerificationButton />
+      )}
 
       <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-soft">
+        <VerificationStepNav
+          activeStep={step}
+          onStepChange={setStep}
+          hasPassport={initial.hasPassport}
+          hasSelfie={initial.hasSelfie}
+          hasTicket={initial.hasTicket}
+          className="mb-6"
+        />
+
         <h2 className="text-lg font-semibold">{current.title}</h2>
 
         {current.kind === "passport" && (
@@ -128,7 +115,6 @@ export function TravelerVerificationWizard({
               label="Passport photo"
               hint="Clear photo of your passport ID page. JPEG, PNG, WebP, or PDF up to 5MB."
               uploaded={initial.hasPassport}
-              disabled={!canEdit}
             />
           </div>
         )}
@@ -140,7 +126,6 @@ export function TravelerVerificationWizard({
               label="Selfie"
               hint="Hold your passport next to your face. Good lighting, no filters."
               uploaded={initial.hasSelfie}
-              disabled={!canEdit}
             />
           </div>
         )}
@@ -152,7 +137,6 @@ export function TravelerVerificationWizard({
               label="Flight ticket or booking"
               hint="Proof of your upcoming trip into Egypt (confirmation or itinerary)."
               uploaded={initial.hasTicket}
-              disabled={!canEdit}
             />
           </div>
         )}
@@ -195,6 +179,8 @@ export function TravelerVerificationWizard({
           ) : null}
         </div>
       </section>
+
+      <VerificationWizardFooter backHref={backHref} />
     </div>
   );
 }

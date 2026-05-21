@@ -32,7 +32,9 @@ export function FirstListingVerifyGate({
   children,
 }: FirstListingVerifyGateProps) {
   const shouldOfferVerify =
-    verificationStatus !== "verified" && verificationStatus !== "pending";
+    verificationStatus !== "verified" &&
+    verificationStatus !== "pending" &&
+    verificationStatus !== "invalid";
 
   const [open, setOpen] = useState(false);
 

@@ -27,7 +27,11 @@ export default async function VerifyTravelerPage() {
         </div>
        
       </div>
-      <TravelerVerificationWizard initial={verification} backHref={backHref} />
+      <TravelerVerificationWizard
+        key={`${verification.status}-${verification.hasPassport}-${verification.hasSelfie}-${verification.hasTicket}`}
+        initial={verification}
+        backHref={backHref}
+      />
     </Container>
   );
 }

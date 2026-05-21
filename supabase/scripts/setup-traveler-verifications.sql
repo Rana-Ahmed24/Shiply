@@ -59,11 +59,11 @@ CREATE POLICY traveler_verifications_update_own_or_admin
   FOR UPDATE
   USING (
     public.is_admin()
-    OR (user_id = auth.uid() AND status IN ('not_submitted', 'pending', 'rejected'))
+    OR (user_id = auth.uid() AND status IN ('not_submitted', 'pending', 'rejected', 'invalid'))
   )
   WITH CHECK (
     public.is_admin()
-    OR (user_id = auth.uid() AND status IN ('not_submitted', 'pending', 'rejected'))
+    OR (user_id = auth.uid() AND status IN ('not_submitted', 'pending', 'rejected', 'invalid'))
   );
 
 -- Step C: Private storage bucket (public = false)
