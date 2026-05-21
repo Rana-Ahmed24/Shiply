@@ -1,3 +1,4 @@
+import { formatShortDateUtc } from "@/lib/format/date";
 import { countryName } from "@/lib/listings/constants";
 import {
   LIFECYCLE_LABELS,
@@ -23,11 +24,12 @@ function formatBudget(
 
 function formatDate(iso: string | null): string | null {
   if (!iso) return null;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
+  const base = formatShortDateUtc(iso);
+  const year = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
+    timeZone: "UTC",
   }).format(new Date(iso));
+  return `${base}, ${year}`;
 }
 
 export function mapRequestToCard(

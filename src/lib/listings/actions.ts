@@ -94,7 +94,7 @@ export async function createListingAction(
     return { error: mapAuthError(error.message) };
   }
 
-  revalidatePath("/travelers");
+  revalidatePath("/");
   revalidatePath("/dashboard");
   revalidatePath("/");
 
@@ -131,7 +131,7 @@ export async function updateListingAction(
     return { error: mapAuthError(error.message) };
   }
 
-  revalidatePath("/travelers");
+  revalidatePath("/");
   revalidatePath(`/listings/${listingId}`);
   revalidatePath("/dashboard");
   revalidatePath("/");
@@ -162,7 +162,7 @@ export async function deleteListingAction(listingId: string) {
     redirect(`/listings/${listingId}/edit?error=delete_failed`);
   }
 
-  revalidatePath("/travelers");
+  revalidatePath("/");
   revalidatePath("/home");
   revalidatePath("/dashboard");
   revalidatePath("/");

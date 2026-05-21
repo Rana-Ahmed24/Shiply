@@ -1,3 +1,4 @@
+import { localDateIso } from "@/lib/requests/schemas";
 import type { RequestDetail } from "@/types/request";
 
 export type RequestFormValues = {
@@ -58,6 +59,9 @@ export function isRequestFormValuesComplete(values: RequestFormValues): boolean 
   if (!values.itemCategory) return false;
   if (!maxBudget || Number(maxBudget) <= 0) return false;
   if (productLink && !/^https?:\/\/.+/i.test(productLink)) return false;
+
+  const neededBy = values.neededBy.trim();
+  if (neededBy && neededBy < localDateIso()) return false;
 
   return true;
 }

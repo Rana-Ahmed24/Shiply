@@ -35,7 +35,7 @@ type ListingsFiltersProps = {
 };
 
 export function ListingsFilters({
-  basePath = "/travelers",
+  basePath = "/",
   className,
 }: ListingsFiltersProps) {
   const router = useRouter();

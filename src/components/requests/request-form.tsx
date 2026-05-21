@@ -5,13 +5,13 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { FieldError } from "@/components/auth/field-error";
-import { useActionRedirect } from "@/hooks/use-action-redirect";
 import { useActionStateToast } from "@/hooks/use-action-state-toast";
+import { getCitiesForCountry } from "@/lib/geo/regions";
+import { DEPARTURE_COUNTRIES } from "@/lib/listings/constants";
 import {
   createRequestAction,
   updateRequestAction,
 } from "@/lib/requests/actions";
-import { DEPARTURE_COUNTRIES } from "@/lib/listings/constants";
 import {
   MAX_REQUEST_IMAGES,
   REQUEST_CATEGORIES,
@@ -22,6 +22,7 @@ import {
   isRequestFormValuesComplete,
   type RequestFormValues,
 } from "@/lib/requests/form-values";
+import { localDateIso } from "@/lib/requests/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,52 @@ function requestFormMountKey(
   return `${request?.id ?? "new"}-${request?.updatedAt ?? "0"}`;
 }
 
+/** Ensures controlled state is what the server action receives (first entry in FormData). */
+function RequestFormSyncFields({ values }: { values: RequestFormValues }) {
+  return (
+    <>
+      <input type="hidden" name="title" value={values.title} />
+      <input type="hidden" name="description" value={values.description} />
+      <input type="hidden" name="itemCategory" value={values.itemCategory} />
+      <input type="hidden" name="productLink" value={values.productLink} />
+      <input type="hidden" name="maxBudget" value={values.maxBudget} />
+      <input type="hidden" name="urgency" value={values.urgency} />
+      <input type="hidden" name="neededBy" value={values.neededBy} />
+      <input
+        type="hidden"
+        name="preferredOriginCountry"
+        value={values.preferredOriginCountry}
+      />
+      <input
+        type="hidden"
+        name="preferredOriginCity"
+        value={values.preferredOriginCity}
+      />
+      <input type="hidden" name="publish" value={values.publish} />
+    </>
+  );
+}
+
+function incompleteRequestHint(values: RequestFormValues): string | null {
+  const title = values.title.trim();
+  const description = values.description.trim();
+  const maxBudget = values.maxBudget.trim();
+  const productLink = values.productLink.trim();
+  const today = localDateIso();
+
+  if (title.length < 3) return "Title must be at least 3 characters.";
+  if (description.length < 10) return "Description must be at least 10 characters.";
+  if (!values.itemCategory) return "Select a category.";
+  if (!maxBudget || Number(maxBudget) <= 0) return "Enter a max budget in EGP.";
+  if (productLink && !/^https?:\/\/.+/i.test(productLink)) {
+    return "Product link must start with http:// or https://.";
+  }
+  if (values.neededBy.trim() && values.neededBy < today) {
+    return "Needed by cannot be before today.";
+  }
+  return null;
+}
+
 export function RequestForm({ request }: RequestFormProps) {
   const isEdit = Boolean(request);
   const action = isEdit
@@ -69,7 +116,6 @@ export function RequestForm({ request }: RequestFormProps) {
     : createRequestAction;
 
   const [state, formAction] = useActionState(action, {});
-  useActionRedirect(state.redirectTo);
   useActionStateToast(state, { errorTitle: "Could not save request" });
 
   const mountKey = requestFormMountKey(request, state.formKey);
@@ -86,6 +132,45 @@ export function RequestForm({ request }: RequestFormProps) {
   }, [initial]);
 
   const canSubmit = isRequestFormValuesComplete(values);
+  const incompleteHint = incompleteRequestHint(values);
+  const minNeededBy = useMemo(() => localDateIso(), []);
+
+  const countryOptions = useMemo(
+    () => [
+      { value: "", label: "Any country" },
+      ...DEPARTURE_COUNTRIES.map((c) => ({
+        value: c.code,
+        label: `${c.flag} ${c.name}`,
+      })),
+    ],
+    []
+  );
+
+  const cityOptions = useMemo(() => {
+    if (!values.preferredOriginCountry) return [];
+    return [
+      { value: "", label: "Any city" },
+      ...getCitiesForCountry(values.preferredOriginCountry).map((city) => ({
+        value: city,
+        label: city,
+      })),
+    ];
+  }, [values.preferredOriginCountry]);
+
+  function handleCountryChange(code: string) {
+    setValues((prev) => {
+      const next = { ...prev, preferredOriginCountry: code };
+      if (!code) {
+        next.preferredOriginCity = "";
+      } else if (prev.preferredOriginCity) {
+        const allowed = getCitiesForCountry(code);
+        if (!allowed.includes(prev.preferredOriginCity)) {
+          next.preferredOriginCity = "";
+        }
+      }
+      return next;
+    });
+  }
 
   const set =
     (key: keyof RequestFormValues) =>
@@ -98,7 +183,15 @@ export function RequestForm({ request }: RequestFormProps) {
     };
 
   return (
-    <form action={formAction} className="space-y-8" noValidate>
+    <form
+      action={formAction}
+      className="space-y-8"
+      noValidate
+      onSubmit={(e) => {
+        if (!canSubmit) e.preventDefault();
+      }}
+    >
+      <RequestFormSyncFields values={values} />
       {isEdit && (
         <input type="hidden" name="keepExistingImages" value="true" />
       )}
@@ -122,7 +215,6 @@ export function RequestForm({ request }: RequestFormProps) {
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
-            name="description"
             required
             rows={4}
             value={values.description}
@@ -136,7 +228,6 @@ export function RequestForm({ request }: RequestFormProps) {
             <Label htmlFor="itemCategory">Category</Label>
             <Select
               id="itemCategory"
-              name="itemCategory"
               required
               value={values.itemCategory}
               onChange={set("itemCategory")}
@@ -157,7 +248,6 @@ export function RequestForm({ request }: RequestFormProps) {
             <Label htmlFor="urgency">Urgency</Label>
             <Select
               id="urgency"
-              name="urgency"
               value={values.urgency}
               onChange={set("urgency")}
               className="rounded-2xl"
@@ -178,8 +268,8 @@ export function RequestForm({ request }: RequestFormProps) {
           <Label htmlFor="productLink">Product link (optional)</Label>
           <Input
             id="productLink"
-            name="productLink"
-            type="url"
+            type="text"
+            inputMode="url"
             value={values.productLink}
             onChange={set("productLink")}
             placeholder="https://store.example.com/product"
@@ -208,12 +298,13 @@ export function RequestForm({ request }: RequestFormProps) {
             <Label htmlFor="neededBy">Needed by (optional)</Label>
             <Input
               id="neededBy"
-              name="neededBy"
               type="date"
+              min={minNeededBy}
               value={values.neededBy}
               onChange={set("neededBy")}
               className="h-11 rounded-2xl"
             />
+            <FieldError messages={state.fieldErrors?.neededBy} />
           </div>
         </div>
       </section>
@@ -247,29 +338,34 @@ export function RequestForm({ request }: RequestFormProps) {
               id="preferredOriginCountry"
               name="preferredOriginCountry"
               value={values.preferredOriginCountry}
-              onValueChange={(v) =>
-                setValues((prev) => ({ ...prev, preferredOriginCountry: v }))
-              }
-              options={[
-                { value: "", label: "Any country" },
-                ...DEPARTURE_COUNTRIES.map((c) => ({
-                  value: c.code,
-                  label: `${c.flag} ${c.name}`,
-                })),
-              ]}
+              onValueChange={handleCountryChange}
+              options={countryOptions}
               placeholder="Any country"
               searchPlaceholder="Search countries…"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="preferredOriginCity">City</Label>
-            <Input
+            <SearchableCombobox
               id="preferredOriginCity"
               name="preferredOriginCity"
               value={values.preferredOriginCity}
-              onChange={set("preferredOriginCity")}
-              placeholder="e.g. Dubai"
-              className="h-11 rounded-2xl"
+              onValueChange={(v) =>
+                setValues((prev) => ({ ...prev, preferredOriginCity: v }))
+              }
+              options={cityOptions}
+              placeholder={
+                values.preferredOriginCountry
+                  ? "Any city"
+                  : "Select a country first"
+              }
+              searchPlaceholder="Search cities…"
+              emptyMessage={
+                values.preferredOriginCountry
+                  ? "No cities for this country."
+                  : "Select a country first."
+              }
+              disabled={!values.preferredOriginCountry}
             />
           </div>
         </div>
@@ -279,7 +375,6 @@ export function RequestForm({ request }: RequestFormProps) {
         <Label htmlFor="publish">Visibility</Label>
         <Select
           id="publish"
-          name="publish"
           value={values.publish}
           onChange={set("publish")}
           className="max-w-xs rounded-2xl"
@@ -288,6 +383,12 @@ export function RequestForm({ request }: RequestFormProps) {
           <option value="draft">Save as draft</option>
         </Select>
       </div>
+
+      {!canSubmit && incompleteHint ? (
+        <p className="text-sm text-muted-foreground" role="status">
+          {incompleteHint}
+        </p>
+      ) : null}
 
       <SubmitButton
         label={isEdit ? "Save request" : "Post request"}

@@ -7,6 +7,11 @@ const urgencyValues = REQUEST_URGENCY_OPTIONS.map((o) => o.value) as [
   ...string[],
 ];
 
+/** Local calendar date (YYYY-MM-DD) for min-date validation */
+export function localDateIso(): string {
+  return new Date().toLocaleDateString("en-CA");
+}
+
 export const requestFormSchema = z.object({
   title: z.string().trim().min(3, "Title must be at least 3 characters").max(120),
   description: z
@@ -33,7 +38,13 @@ export const requestFormSchema = z.object({
     .positive("Budget must be greater than 0")
     .max(1_000_000),
   urgency: z.enum(urgencyValues),
-  neededBy: z.string().optional(),
+  neededBy: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || v >= localDateIso(),
+      "Needed by cannot be before today"
+    ),
   preferredOriginCountry: z
     .string()
     .optional()

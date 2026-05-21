@@ -217,7 +217,7 @@ function EmptyState({ tab }: { tab: MatchTab }) {
         Find a traveler and send your first delivery request.
       </p>
       <Link
-        href="/home"
+        href="/"
         className={cn(
           buttonVariants({ size: "sm" }),
           "mt-5 inline-flex rounded-xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"

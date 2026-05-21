@@ -204,9 +204,7 @@ export async function createRequestAction(
     ) {
       revalidatePath("/requests");
       revalidatePath("/dashboard");
-      return {
-        redirectTo: `/requests/${data.id}?warning=images_storage`,
-      };
+      redirect(`/requests/${data.id}?warning=images_storage`);
     }
 
     await deleteRequest(supabase, data.id);
@@ -239,7 +237,7 @@ export async function createRequestAction(
   revalidatePath("/home");
   revalidatePath("/dashboard");
 
-  return { redirectTo: `/requests/${data.id}` };
+  redirect(`/requests/${data.id}`);
 }
 
 export async function updateRequestAction(
@@ -327,11 +325,11 @@ export async function updateRequestAction(
   revalidatePath(`/requests/${requestId}`);
   revalidatePath("/dashboard");
 
-  return {
-    redirectTo: uploadSkippable
-      ? `/requests/${requestId}?warning=images_storage`
-      : `/requests/${requestId}`,
-  };
+  if (uploadSkippable) {
+    redirect(`/requests/${requestId}?warning=images_storage`);
+  }
+
+  redirect(`/requests/${requestId}`);
 }
 
 export async function cancelRequestAction(requestId: string) {

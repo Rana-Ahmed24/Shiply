@@ -26,7 +26,7 @@ function filtersFromParams(searchParams: URLSearchParams) {
 }
 
 type ListingsFeedFiltersProps = {
-  /** Base path for filter navigation (e.g. `/` or `/travelers`) */
+  /** Base path for filter navigation (e.g. `/`) */
   basePath?: string;
   className?: string;
 };

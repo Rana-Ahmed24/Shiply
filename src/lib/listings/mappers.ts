@@ -1,3 +1,4 @@
+import { formatShortDateUtc } from "@/lib/format/date";
 import { countryFlag, countryName } from "@/lib/listings/constants";
 import type {
   ListingCardModel,
@@ -12,13 +13,6 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   shop_and_ship: "Shop & ship",
   ship_only: "Ship only",
 };
-
-function formatShortDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(iso));
-}
 
 function rowToCard(
   row: TravelerListingRow,
@@ -38,8 +32,8 @@ function rowToCard(
       country: countryName(row.destination_country_code),
       flag: countryFlag(row.destination_country_code),
     },
-    arrives: formatShortDate(row.arrival_at),
-    departs: row.departure_at ? formatShortDate(row.departure_at) : null,
+    arrives: formatShortDateUtc(row.arrival_at),
+    departs: row.departure_at ? formatShortDateUtc(row.departure_at) : null,
     capacity: `${row.available_weight_kg} kg`,
     service: SERVICE_LABELS[row.service_type],
     rating: traveler?.traveler_rating_avg ?? 0,

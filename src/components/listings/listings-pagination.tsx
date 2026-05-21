@@ -15,7 +15,7 @@ type ListingsPaginationProps = {
 export function ListingsPagination({
   page,
   totalPages,
-  basePath = "/travelers",
+  basePath = "/",
 }: ListingsPaginationProps) {
   const searchParams = useSearchParams();
 

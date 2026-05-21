@@ -8,7 +8,6 @@ export const SITE = {
 
 export const NAV_LINKS = [
   { href: "/how-it-works", label: "How it works" },
-  { href: "/travelers", label: "Find travelers" },
   { href: "/requests", label: "Post a request" },
   { href: "/trust", label: "Trust & safety" },
 ] as const;
@@ -17,13 +16,12 @@ export const NAV_LINKS = [
 export const AUTH_NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/matches", label: "Matches" },
-  { href: "/travelers", label: "Find travelers" },
   { href: "/requests", label: "Requests" },
 ] as const;
 
 export const FOOTER_LINKS = {
   product: [
-    { href: "/travelers", label: "Browse travelers" },
+    { href: "/", label: "Home" },
     { href: "/requests", label: "Post a request" },
     { href: "/how-it-works", label: "How it works" },
   ],

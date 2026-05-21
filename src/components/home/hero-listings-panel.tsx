@@ -8,14 +8,17 @@ type HeroListingsPanelProps = {
 export function HeroListingsPanel({ listings }: HeroListingsPanelProps) {
   return (
     <div className="flex flex-col gap-3">
-      <p className="flex items-center gap-2 text-xs tracking-wide text-brand-teal-light">
-        <span className="size-1.5 animate-pulse rounded-full bg-brand-teal-light" />
+      <div className="flex items-center gap-2 text-xs tracking-wide text-brand-teal-light">
+        <span
+          className="size-1.5 shrink-0 animate-pulse rounded-full bg-brand-teal-light"
+          aria-hidden
+        />
         Live traveler listings
-      </p>
+      </div>
       {listings.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-border/80 bg-card p-6 text-center text-sm text-brand-muted">
+        <div className="rounded-[14px] border border-dashed border-border/80 bg-card p-6 text-center text-sm text-brand-muted">
           No active trips yet. List your journey to get started.
-        </p>
+        </div>
       ) : (
         listings.map((listing, index) => (
           <HeroListingPreviewCard
