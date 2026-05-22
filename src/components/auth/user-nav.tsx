@@ -63,6 +63,18 @@ export function UserNav({ userId, email, fullName, roles }: UserNavProps) {
             <Settings className="size-4 shrink-0" aria-hidden />
             Settings
           </DropdownMenuItem>
+          {roles?.includes("admin") ? (
+            <>
+              <DropdownMenuItem
+                render={<Link href="/admin/verifications" />}
+              >
+                Admin verifications
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/admin/reviews" />}>
+                Admin reviews
+              </DropdownMenuItem>
+            </>
+          ) : null}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

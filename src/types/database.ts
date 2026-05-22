@@ -149,16 +149,38 @@ export type Database = {
       reviews: {
         Row: {
           id: string;
-          rating: number;
-          comment: string | null;
-          created_at: string;
+          match_id: string;
           reviewer_id: string;
           reviewee_id: string;
+          rating: number;
+          comment: string | null;
           is_public: boolean;
+          is_flagged: boolean;
           removed_at: string | null;
+          created_at: string;
+          updated_at: string;
         };
-        Insert: Record<string, never>;
-        Update: Record<string, never>;
+        Insert: {
+          id?: string;
+          match_id: string;
+          reviewer_id: string;
+          reviewee_id: string;
+          rating: number;
+          comment?: string | null;
+          is_public?: boolean;
+          is_flagged?: boolean;
+          removed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          is_public?: boolean;
+          is_flagged?: boolean;
+          removed_at?: string | null;
+          comment?: string | null;
+          rating?: number;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       customer_requests: {

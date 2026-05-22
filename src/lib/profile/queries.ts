@@ -5,6 +5,7 @@ import {
   normalizeProfileRow,
   type ProfileRowRaw,
 } from "@/lib/profile/db";
+import { getPublicReviewsForProfile } from "@/lib/reviews/queries";
 import { createClient } from "@/lib/supabase/server";
 import { getTravelerVerification } from "@/lib/verification/queries";
 import type { PublicProfile } from "@/types/profile";
@@ -67,7 +68,7 @@ export async function getPublicProfile(
   }
 
   const verifications = await fetchVerifications(supabase, profileId);
-  const reviews = await fetchReviews(supabase, profileId);
+  const reviews = await getPublicReviewsForProfile(profileId);
   const normalized = normalizeProfileRow(profile);
   const travelerVerification = hasRole(normalized.roles, "traveler")
     ? await getTravelerVerification(profileId)
@@ -99,45 +100,6 @@ async function fetchVerifications(
   return (data ?? []).map((v) => ({
     type: v.type as string,
     status: v.status as string,
-  }));
-}
-
-async function fetchReviews(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string
-) {
-  const { data, error } = await supabase
-    .from("reviews")
-    .select("id, rating, comment, created_at, reviewer_id")
-    .eq("reviewee_id", userId)
-    .eq("is_public", true)
-    .is("removed_at", null)
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  if (error) {
-    if (error.message.includes("does not exist")) return [];
-    return [];
-  }
-
-  if (!data?.length) return [];
-
-  const reviewerIds = [...new Set(data.map((r) => r.reviewer_id))];
-  const { data: reviewers } = await supabase
-    .from("profiles")
-    .select("id, full_name")
-    .in("id", reviewerIds);
-
-  const nameMap = new Map(
-    (reviewers ?? []).map((r) => [r.id, r.full_name])
-  );
-
-  return data.map((r) => ({
-    id: r.id,
-    rating: r.rating,
-    comment: r.comment,
-    created_at: r.created_at,
-    reviewer_name: nameMap.get(r.reviewer_id) ?? null,
   }));
 }
 

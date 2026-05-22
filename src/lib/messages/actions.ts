@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/server";
-import { notifyNewMessage } from "@/lib/messages/notifications";
+import { notifyNewMessage } from "@/lib/notifications/events";
 import {
   getConversationMeta,
   markMatchMessagesRead,
@@ -36,6 +36,7 @@ async function notifyRecipient(
 
   await notifyNewMessage({
     recipientId: meta.counterpartyId,
+    actorId: senderId,
     senderName: (profile?.full_name as string) || "Someone",
     matchId,
     preview,

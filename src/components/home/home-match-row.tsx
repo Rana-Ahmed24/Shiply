@@ -58,6 +58,32 @@ export function HomeMatchRow({
     );
   }
 
+  if (match.displayStatus === "completed") {
+    return (
+      <li className="rounded-2xl border border-brand-gold/30 bg-card p-4 shadow-soft">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <MatchStatusBadge
+              status="completed"
+              label={match.displayStatusLabel}
+            />
+            <p className="mt-2 font-semibold">{match.requestTitle}</p>
+            <p className="text-sm text-muted-foreground">{match.listingRoute}</p>
+          </div>
+          <Link
+            href={`/matches/${match.id}?message=match_completed`}
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "rounded-xl bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
+            )}
+          >
+            Rate experience
+          </Link>
+        </div>
+      </li>
+    );
+  }
+
   const counterpartyLabel = variant === "incoming" ? "Customer" : "Traveler";
 
   return (

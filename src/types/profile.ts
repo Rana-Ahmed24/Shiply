@@ -1,5 +1,6 @@
 import type { TravelerTier } from "@/lib/profile/constants";
 import type { UserRole } from "@/lib/auth/roles";
+import type { ReviewDisplay } from "@/types/review";
 import type { TravelerVerificationView } from "@/types/traveler-verification";
 
 export type ProfileVerification = {
@@ -7,13 +8,8 @@ export type ProfileVerification = {
   status: string;
 };
 
-export type ProfileReview = {
-  id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  reviewer_name: string | null;
-};
+/** @deprecated Use ReviewDisplay — kept for profile mapper compatibility */
+export type ProfileReview = ReviewDisplay;
 
 export type PublicProfile = {
   id: string;

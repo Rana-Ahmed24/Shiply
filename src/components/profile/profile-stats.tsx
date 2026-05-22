@@ -1,5 +1,6 @@
-import { Package, Star } from "lucide-react";
+import { Package } from "lucide-react";
 
+import { RatingSummary } from "@/components/reviews/rating-summary";
 import { tierProgress } from "@/lib/profile/tier";
 import type { PublicProfile } from "@/types/profile";
 import { getDisplayStats } from "@/lib/profile/queries";
@@ -12,19 +13,43 @@ type ProfileStatsProps = {
 export function ProfileStats({ profile }: ProfileStatsProps) {
   const stats = getDisplayStats(profile);
   const isTraveler = hasRole(profile.roles, "traveler");
+  const isCustomer = hasRole(profile.roles, "customer");
   const progress = isTraveler ? tierProgress(profile.deals_completed) : null;
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      <StatCard
-        icon={Star}
-        label="Rating"
-        value={
-          stats.rating != null
-            ? `${stats.rating.toFixed(1)} (${stats.reviewCount})`
-            : "No reviews yet"
-        }
-      />
+      <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          {isTraveler && isCustomer
+            ? "Ratings"
+            : isTraveler
+              ? "Traveler rating"
+              : "Customer rating"}
+        </p>
+        <div className="mt-2 space-y-3">
+          {isTraveler ? (
+            <RatingSummary
+              stats={{
+                averageRating: profile.traveler_rating_avg,
+                totalReviews: profile.traveler_review_count,
+              }}
+              label="As traveler"
+            />
+          ) : null}
+          {isCustomer ? (
+            <RatingSummary
+              stats={{
+                averageRating: profile.customer_rating_avg,
+                totalReviews: profile.customer_review_count,
+              }}
+              label="As customer"
+            />
+          ) : null}
+          {!isTraveler && !isCustomer && stats.rating == null ? (
+            <p className="text-sm text-muted-foreground">No reviews yet</p>
+          ) : null}
+        </div>
+      </div>
       <StatCard
         icon={Package}
         label={stats.dealsLabel}
@@ -46,7 +71,7 @@ function StatCard({
   label,
   value,
 }: {
-  icon: typeof Star;
+  icon: typeof Package;
   label: string;
   value: string;
 }) {

@@ -400,6 +400,14 @@ export async function approveVerificationAction(
     return { error: mapAuthError(error.message) };
   }
 
+  const { notifyVerificationApproved } = await import(
+    "@/lib/notifications/events"
+  );
+  await notifyVerificationApproved({
+    userId: row.user_id as string,
+    actorId: user.id,
+  });
+
   revalidateVerificationSurfaces();
   return { success: "Traveler verified." };
 }
@@ -421,6 +429,16 @@ export async function rejectVerificationAction(
   const supabase = await createClient();
   const user = await requireUser();
 
+  const { data: row, error: fetchError } = await supabase
+    .from("traveler_verifications")
+    .select("user_id")
+    .eq("id", parsed.data.verificationId)
+    .maybeSingle();
+
+  if (fetchError || !row) {
+    return { error: "Verification record not found." };
+  }
+
   const { error } = await supabase
     .from("traveler_verifications")
     .update({
@@ -434,6 +452,15 @@ export async function rejectVerificationAction(
   if (error) {
     return { error: mapAuthError(error.message) };
   }
+
+  const { notifyVerificationRejected } = await import(
+    "@/lib/notifications/events"
+  );
+  await notifyVerificationRejected({
+    userId: row.user_id as string,
+    actorId: user.id,
+    reason: parsed.data.reason,
+  });
 
   revalidateVerificationSurfaces();
   return { success: "Verification rejected." };

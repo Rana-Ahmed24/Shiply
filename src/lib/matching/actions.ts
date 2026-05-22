@@ -12,7 +12,13 @@ import {
 import { PLATFORM_FEE_RATE } from "@/lib/matching/constants";
 import { insertMatch, updateMatchById } from "@/lib/matching/db";
 import { seedMatchChatWelcome } from "@/lib/matching/chat";
-import { notifyMatchUpdate } from "@/lib/matching/notifications";
+import {
+  notifyDeliveryCompleted,
+  notifyMatchAccepted,
+  notifyMatchCancelled,
+  notifyMatchRejected,
+  notifyNewMatch,
+} from "@/lib/notifications/events";
 import {
   fetchListingForMatch,
   fetchRequestForMatch,
@@ -129,13 +135,14 @@ export async function createMatchAction(
   }
 
   const notifyUserId = isCustomer ? listing.traveler_id : request.customer_id;
-  await notifyMatchUpdate({
-    userId: notifyUserId,
+  await notifyNewMatch({
+    recipientId: notifyUserId,
+    actorId: user.id,
+    matchId: match.id,
     title: isCustomer ? "New delivery request" : "Traveler offered to deliver",
     body: isCustomer
       ? "A customer requested your trip for their package."
       : "A traveler offered to carry your request on their trip.",
-    matchId: match.id,
   });
 
   revalidatePath("/");
@@ -199,12 +206,10 @@ export async function acceptMatchAction(
 
   await seedMatchChatWelcome(matchId, user.id);
 
-  await notifyMatchUpdate({
-    userId: match.initiated_by,
-    title: "Request accepted",
-    body: "Your delivery request was accepted. Open Matches to view details and chat.",
+  await notifyMatchAccepted({
+    recipientId: match.initiated_by,
+    actorId: user.id,
     matchId,
-    extra: { status: "accepted" },
   });
 
   revalidatePath("/");
@@ -267,11 +272,11 @@ export async function rejectMatchAction(
       ? match.customer_id
       : match.traveler_id;
 
-  await notifyMatchUpdate({
-    userId: otherParty,
-    title: "Match declined",
-    body: reason,
+  await notifyMatchRejected({
+    recipientId: otherParty,
+    actorId: user.id,
     matchId,
+    reason,
   });
 
   revalidatePath("/");
@@ -330,10 +335,9 @@ export async function cancelMatchAction(
     return { error: mapAuthError(updateError) };
   }
 
-  await notifyMatchUpdate({
-    userId: match.traveler_id,
-    title: "Request cancelled",
-    body: "The customer cancelled their delivery request.",
+  await notifyMatchCancelled({
+    recipientId: match.traveler_id,
+    actorId: user.id,
     matchId,
   });
 
@@ -400,10 +404,9 @@ export async function completeMatchAction(
   const otherParty =
     user.id === match.traveler_id ? match.customer_id : match.traveler_id;
 
-  await notifyMatchUpdate({
-    userId: otherParty,
-    title: "Delivery completed",
-    body: "Your delivery match was marked as completed.",
+  await notifyDeliveryCompleted({
+    recipientId: otherParty,
+    actorId: user.id,
     matchId,
   });
 

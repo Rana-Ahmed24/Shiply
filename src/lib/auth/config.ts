@@ -4,6 +4,8 @@ export const PROTECTED_ROUTE_PREFIXES = [
   "/dashboard",
   "/settings",
   "/messages",
+  "/notifications",
+  "/matches",
   "/listings/new",
   "/requests",
   "/profile",

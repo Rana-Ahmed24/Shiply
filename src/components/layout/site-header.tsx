@@ -1,8 +1,9 @@
-import { MessageSquare } from "lucide-react";
+import { Bell, MessageSquare } from "lucide-react";
 import Link from "next/link";
 
 import { UserNav } from "@/components/auth/user-nav";
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
+import { NotificationsBell } from "@/components/notifications/notifications-bell";
 import { MessagesNavLink } from "@/components/navigation/messages-nav-link";
 import { AppModeHydrator } from "@/components/mode/app-mode-hydrator";
 import { buttonVariants } from "@/components/ui/button";
@@ -66,6 +67,7 @@ export function SiteHeader({ session, mode }: SiteHeaderProps) {
 
   const signedInActions = session ? (
     <>
+      <NotificationsBell userId={session.user.id} className="hidden sm:inline-flex" />
       <MessagesNavLink className="hidden sm:inline-flex" />
       <UserNav
         userId={session.user.id}
@@ -78,6 +80,17 @@ export function SiteHeader({ session, mode }: SiteHeaderProps) {
 
   const signedInMobileActions = session ? (
     <>
+      <NotificationsBell userId={session.user.id} className="sm:hidden" />
+      <Link
+        href="/notifications"
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          "w-full justify-center gap-2 rounded-2xl sm:hidden"
+        )}
+      >
+        <Bell className="size-4" aria-hidden />
+        All notifications
+      </Link>
       <Link
         href="/messages"
         className={cn(

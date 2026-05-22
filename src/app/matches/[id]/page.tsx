@@ -8,6 +8,7 @@ import { MatchAcceptedCard } from "@/components/matching/match-accepted-card";
 import { MatchDetailLive } from "@/components/matching/match-detail-live";
 import { MatchActions } from "@/components/matching/match-actions";
 import { MatchStatusBadge } from "@/components/matching/match-status-badge";
+import { MatchReviewSection } from "@/components/reviews/match-review-section";
 import { HomeQueryToast } from "@/components/home/home-query-toast";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/server";
@@ -41,9 +42,10 @@ export default async function MatchDetailPage({
   }
 
   const isAccepted = match.displayStatus === "accepted";
+  const isCompleted = match.displayStatus === "completed";
 
   const compatFromFactors: CompatibilityResult | null =
-    !isAccepted && match.factors.length > 0
+    !isAccepted && !isCompleted && match.factors.length > 0
       ? {
           score: match.compatibilityScore ?? 0,
           factors: match.factors,
@@ -64,7 +66,7 @@ export default async function MatchDetailPage({
           />
           <h1 className="text-display mt-3 text-3xl">{match.requestTitle}</h1>
           <p className="mt-2 text-muted-foreground">{match.listingRoute}</p>
-          {!isAccepted && (
+          {!isAccepted && !isCompleted && (
             <p className="mt-1 text-lg font-medium text-brand-gold">
               {match.agreedPriceLabel}
             </p>
@@ -78,9 +80,26 @@ export default async function MatchDetailPage({
         </Link>
       </div>
 
+      {isCompleted ? (
+        <section className="rounded-2xl border border-brand-gold/30 bg-brand-gold/5 p-5">
+          <MatchStatusBadge
+            status="completed"
+            label={match.displayStatusLabel}
+          />
+          <p className="mt-3 text-sm text-muted-foreground">
+            This delivery is complete. Share feedback to help the community
+            trust who they work with.
+          </p>
+        </section>
+      ) : null}
+
+      {isCompleted ? (
+        <MatchReviewSection matchId={id} userId={session.user.id} />
+      ) : null}
+
       {isAccepted ? (
         <MatchAcceptedCard match={homeItem} />
-      ) : (
+      ) : !isCompleted ? (
         <>
           <section className="rounded-2xl border border-border/60 p-6">
             <h2 className="font-semibold">Actions</h2>
@@ -103,7 +122,7 @@ export default async function MatchDetailPage({
             </section>
           )}
         </>
-      )}
+      ) : null}
 
       {match.cancellationReason && match.displayStatus === "rejected" && (
         <section className="rounded-2xl border border-border/60 p-6">
