@@ -10,6 +10,9 @@ import {
   applyIntegrityToVerificationView,
   mapVerificationRow,
 } from "@/lib/verification/mappers";
+import { hasRole, type UserRole } from "@/lib/auth/roles";
+import { getUser, getProfile } from "@/lib/auth/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type {
   AdminVerificationQueueItem,
@@ -135,10 +138,30 @@ export async function fetchVerificationStatusMap(
   return map;
 }
 
+async function getAdminQueueClient() {
+  const user = await getUser();
+  if (!user) return null;
+
+  const profile = await getProfile(user.id);
+  if (!hasRole(profile?.roles as UserRole[] | undefined, "admin")) {
+    return null;
+  }
+
+  try {
+    return createAdminClient();
+  } catch {
+    return await createClient();
+  }
+}
+
 export async function getAdminVerificationQueue(): Promise<
   AdminVerificationQueueItem[]
 > {
-  const supabase = await createClient();
+  noStore();
+
+  const supabase = await getAdminQueueClient();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from("traveler_verifications")
     .select(
@@ -169,7 +192,7 @@ export async function getAdminVerificationQueue(): Promise<
     ])
   );
 
-  return rows.map((row) => {
+  const items = rows.map((row) => {
     const p = profileMap.get(row.user_id as string);
     return {
       id: row.id as string,
@@ -182,21 +205,35 @@ export async function getAdminVerificationQueue(): Promise<
       passportPath: row.passport_url as string | null,
       selfiePath: row.selfie_url as string | null,
       ticketPath: row.ticket_url as string | null,
+      previewUrls: {
+        passport: null as string | null,
+        selfie: null as string | null,
+        ticket: null as string | null,
+      },
     };
   });
+
+  await Promise.all(
+    items.map(async (item) => {
+      item.previewUrls = await getAdminSignedDocUrls(item, supabase);
+    })
+  );
+
+  return items;
 }
 
-/** Signed URLs for admin review (service role not required — admin RLS on storage). */
+/** Signed URLs for admin review (prefer service-role client when available). */
 export async function getAdminSignedDocUrls(
   item: Pick<
     AdminVerificationQueueItem,
     "passportPath" | "selfiePath" | "ticketPath"
-  >
+  >,
+  supabaseClient?: Awaited<ReturnType<typeof createClient>>
 ): Promise<{ passport: string | null; selfie: string | null; ticket: string | null }> {
   const { createSignedVerificationUrl } = await import(
     "@/lib/verification/storage"
   );
-  const supabase = await createClient();
+  const supabase = supabaseClient ?? (await createClient());
 
   const [passport, selfie, ticket] = await Promise.all([
     item.passportPath
@@ -211,12 +248,4 @@ export async function getAdminSignedDocUrls(
   ]);
 
   return { passport, selfie, ticket };
-}
-
-/** Run on session restore for travelers (repairs stale verified rows). */
-export async function runTravelerVerificationIntegrityForSession(
-  userId: string
-): Promise<void> {
-  noStore();
-  await checkTravelerVerificationIntegrity(userId, { repair: true, log: false });
 }

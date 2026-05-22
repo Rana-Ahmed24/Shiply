@@ -2,6 +2,8 @@ import { Container } from "@/components/layout/container";
 import { AdminVerificationQueue } from "@/components/verification/admin-verification-queue";
 import { getAdminVerificationQueue } from "@/lib/verification/queries";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminVerificationsPage() {
   const items = await getAdminVerificationQueue();
 

@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { User } from "@supabase/supabase-js";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -13,7 +14,6 @@ import type { AuthSession, Profile } from "@/lib/auth/session";
 import { hasRole, type UserRole } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { runTravelerVerificationIntegrityForSession } from "@/lib/verification/queries";
 
 export async function getUser(): Promise<User | null> {
   if (!hasSupabaseEnv()) return null;
@@ -56,7 +56,17 @@ export async function getSession(): Promise<AuthSession | null> {
 
   const profile = await getProfile(user.id);
 
-  if (profile && hasRole(profile.roles as UserRole[], "traveler")) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const skipIntegrity = pathname.startsWith("/admin");
+
+  if (
+    !skipIntegrity &&
+    profile &&
+    hasRole(profile.roles as UserRole[], "traveler")
+  ) {
+    const { runTravelerVerificationIntegrityForSession } = await import(
+      "@/lib/verification/session-integrity"
+    );
     await runTravelerVerificationIntegrityForSession(user.id);
   }
 

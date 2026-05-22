@@ -13,8 +13,11 @@ type MainLayoutProps = {
   children: React.ReactNode;
 };
 
-async function HeaderWithSession() {
-  const session = await getSession();
+async function HeaderWithSession({
+  session,
+}: {
+  session: Awaited<ReturnType<typeof getSession>>;
+}) {
   const mode = session
     ? await getAppMode(
         (session.profile?.preferred_mode as AppMode | undefined) ?? "customer"
@@ -30,7 +33,7 @@ export async function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <Suspense fallback={<SiteHeaderSkeleton />}>
-        <HeaderWithSession />
+        <HeaderWithSession session={session} />
       </Suspense>
       <main className={cn("flex-1", session && "pb-20 md:pb-0")}>
         {children}

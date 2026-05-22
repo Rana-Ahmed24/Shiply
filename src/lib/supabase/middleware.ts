@@ -99,6 +99,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(new URL(redirectTo, request.url));
     }
 
+    supabaseResponse.headers.set("x-pathname", pathname);
+
     return supabaseResponse;
   } catch (error) {
     console.error("[middleware] Supabase session update failed:", error);

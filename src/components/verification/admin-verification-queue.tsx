@@ -1,13 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useTransition } from "react";
 
 import { useActionStateToast } from "@/hooks/use-action-state-toast";
 import { useToast } from "@/components/ui/toast-provider";
 import { TravelerVerificationBadge } from "@/components/verification/traveler-verification-badge";
 import {
   approveVerificationAction,
-  getVerificationSignedUrlAction,
   rejectVerificationAction,
 } from "@/lib/verification/actions";
 import { Button } from "@/components/ui/button";
@@ -22,23 +21,12 @@ type AdminVerificationQueueProps = {
 function DocPreview({
   label,
   path,
+  url,
 }: {
   label: string;
   path: string | null;
+  url: string | null;
 }) {
-  const [url, setUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!path) return;
-    let cancelled = false;
-    getVerificationSignedUrlAction(path).then((res) => {
-      if (!cancelled) setUrl(res.url);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [path]);
-
   if (!path) {
     return (
       <p className="text-xs text-muted-foreground">{label}: not uploaded</p>
@@ -47,7 +35,7 @@ function DocPreview({
 
   if (!url) {
     return (
-      <p className="text-xs text-muted-foreground">{label}: loading preview…</p>
+      <p className="text-xs text-muted-foreground">{label}: preview unavailable</p>
     );
   }
 
@@ -176,9 +164,21 @@ export function AdminVerificationQueue({ items }: AdminVerificationQueueProps) {
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <DocPreview label="Passport" path={item.passportPath} />
-            <DocPreview label="Selfie" path={item.selfiePath} />
-            <DocPreview label="Ticket" path={item.ticketPath} />
+            <DocPreview
+              label="Passport"
+              path={item.passportPath}
+              url={item.previewUrls.passport}
+            />
+            <DocPreview
+              label="Selfie"
+              path={item.selfiePath}
+              url={item.previewUrls.selfie}
+            />
+            <DocPreview
+              label="Ticket"
+              path={item.ticketPath}
+              url={item.previewUrls.ticket}
+            />
           </div>
 
           {item.status === "pending" ? (

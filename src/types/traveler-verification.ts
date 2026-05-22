@@ -51,4 +51,9 @@ export type AdminVerificationQueueItem = {
   passportPath: string | null;
   selfiePath: string | null;
   ticketPath: string | null;
+  previewUrls: {
+    passport: string | null;
+    selfie: string | null;
+    ticket: string | null;
+  };
 };
