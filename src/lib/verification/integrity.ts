@@ -9,10 +9,14 @@ import {
 import type { TravelerVerificationDocKind } from "@/types/traveler-verification";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/types/database";
 import type {
   TravelerVerificationRow,
   TravelerVerificationStatus,
 } from "@/types/traveler-verification";
+
+type TravelerVerificationUpdate =
+  Database["public"]["Tables"]["traveler_verifications"]["Update"];
 
 export type VerificationIntegrityResult = {
   userId: string;
@@ -166,9 +170,9 @@ export async function checkTravelerVerificationIntegrity(
   if (repair && row && (needsPathRepair || needsStatusRepair)) {
     try {
       const admin = createAdminClient();
-      const updates: Record<string, unknown> = { ...pathClears };
+      const updates: TravelerVerificationUpdate = { ...pathClears };
       if (needsStatusRepair) {
-        updates.status = "invalid";
+        updates.status = "invalid" as TravelerVerificationUpdate["status"];
         updates.reviewed_by = null;
         updates.reviewed_at = null;
         effectiveStatus = "invalid";

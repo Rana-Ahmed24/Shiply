@@ -110,6 +110,7 @@ export async function createMatchAction(
     Number(formData.get("agreedPrice")) || undefined
   );
 
+  const supabase = await createClient();
   const { data: match, error } = await insertMatch(supabase, {
     listing_id: listingId,
     request_id: requestId,

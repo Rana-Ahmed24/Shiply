@@ -12,8 +12,8 @@ type MessagesNavLinkProps = {
   className?: string;
 };
 
-const UNREAD_POLL_MS = 60_000;
-const UNREAD_EVENT_DEBOUNCE_MS = 800;
+const UNREAD_POLL_MS = 120_000;
+const UNREAD_EVENT_DEBOUNCE_MS = 2_000;
 
 export function MessagesNavLink({ className }: MessagesNavLinkProps) {
   const [unreadCount, setUnreadCount] = useState(0);

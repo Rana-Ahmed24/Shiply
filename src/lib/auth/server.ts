@@ -1,8 +1,6 @@
 import "server-only";
 
 import type { User } from "@supabase/supabase-js";
-import { cache } from "react";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -12,7 +10,6 @@ import {
 } from "@/lib/auth/config";
 import { isBenignAuthError } from "@/lib/auth/errors";
 import type { AuthSession, Profile } from "@/lib/auth/session";
-import { hasRole, type UserRole } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 
@@ -51,31 +48,14 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
-export const getSession = cache(async (): Promise<AuthSession | null> => {
+/** Session for layout/pages — no verification side effects (avoids global RSC loops). */
+export async function getSession(): Promise<AuthSession | null> {
   const user = await getUser();
   if (!user) return null;
 
   const profile = await getProfile(user.id);
-
-  const pathname = (await headers()).get("x-pathname") ?? "";
-  const skipSessionIntegrity =
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/listings") ||
-    pathname.startsWith("/verify-traveler");
-
-  if (
-    !skipSessionIntegrity &&
-    profile &&
-    hasRole(profile.roles as UserRole[], "traveler")
-  ) {
-    const { runTravelerVerificationIntegrityForSession } = await import(
-      "@/lib/verification/session-integrity"
-    );
-    await runTravelerVerificationIntegrityForSession(user.id);
-  }
-
   return { user, profile };
-});
+}
 
 export async function requireUser(redirectTo = DEFAULT_LOGIN_PATH): Promise<User> {
   const user = await getUser();

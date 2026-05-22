@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { dispatchMessagesUnreadChanged } from "@/lib/messages/unread-events";
 import { createClientIfConfigured } from "@/lib/supabase/client";
 
-const REALTIME_DEBOUNCE_MS = 1_500;
+const REALTIME_DEBOUNCE_MS = 3_000;
 
 /** Keeps navbar unread badge in sync when new messages or reads arrive. */
 export function useUnreadMessagesSubscription(userId: string | null) {

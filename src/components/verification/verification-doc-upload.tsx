@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { useRouter } from "next/navigation";
 
 import { FieldError } from "@/components/auth/field-error";
 import { useActionStateToast } from "@/hooks/use-action-state-toast";
