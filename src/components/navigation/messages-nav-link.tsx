@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { MessageSquare } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { MESSAGES_UNREAD_CHANGED_EVENT } from "@/lib/messages/unread-events";
@@ -13,11 +12,17 @@ type MessagesNavLinkProps = {
   className?: string;
 };
 
+const UNREAD_POLL_MS = 60_000;
+const UNREAD_EVENT_DEBOUNCE_MS = 800;
+
 export function MessagesNavLink({ className }: MessagesNavLinkProps) {
-  const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
+  const loadInFlightRef = useRef(false);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     try {
       const res = await fetch("/api/messages/unread-count", {
         cache: "no-store",
@@ -27,19 +32,32 @@ export function MessagesNavLink({ className }: MessagesNavLinkProps) {
       setUnreadCount(data.count ?? 0);
     } catch {
       /* ignore */
+    } finally {
+      loadInFlightRef.current = false;
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load, pathname]);
+  const scheduleLoad = useCallback(() => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      void load();
+    }, UNREAD_EVENT_DEBOUNCE_MS);
+  }, [load]);
 
   useEffect(() => {
-    const onChange = () => void load();
-    window.addEventListener(MESSAGES_UNREAD_CHANGED_EVENT, onChange);
-    return () =>
-      window.removeEventListener(MESSAGES_UNREAD_CHANGED_EVENT, onChange);
+    void load();
+    const interval = window.setInterval(() => void load(), UNREAD_POLL_MS);
+    return () => window.clearInterval(interval);
   }, [load]);
+
+  useEffect(() => {
+    const onChange = () => scheduleLoad();
+    window.addEventListener(MESSAGES_UNREAD_CHANGED_EVENT, onChange);
+    return () => {
+      window.removeEventListener(MESSAGES_UNREAD_CHANGED_EVENT, onChange);
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [scheduleLoad]);
 
   const label =
     unreadCount > 0

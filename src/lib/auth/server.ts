@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { User } from "@supabase/supabase-js";
+import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -50,17 +51,20 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
-export async function getSession(): Promise<AuthSession | null> {
+export const getSession = cache(async (): Promise<AuthSession | null> => {
   const user = await getUser();
   if (!user) return null;
 
   const profile = await getProfile(user.id);
 
   const pathname = (await headers()).get("x-pathname") ?? "";
-  const skipIntegrity = pathname.startsWith("/admin");
+  const skipSessionIntegrity =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/listings") ||
+    pathname.startsWith("/verify-traveler");
 
   if (
-    !skipIntegrity &&
+    !skipSessionIntegrity &&
     profile &&
     hasRole(profile.roles as UserRole[], "traveler")
   ) {
@@ -71,7 +75,7 @@ export async function getSession(): Promise<AuthSession | null> {
   }
 
   return { user, profile };
-}
+});
 
 export async function requireUser(redirectTo = DEFAULT_LOGIN_PATH): Promise<User> {
   const user = await getUser();

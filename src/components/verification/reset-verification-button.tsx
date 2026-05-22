@@ -31,7 +31,8 @@ export function ResetVerificationButton() {
   });
 
   useEffect(() => {
-    if (state.success) router.refresh();
+    if (!state.success) return;
+    router.refresh();
   }, [state.success, router]);
 
   return (

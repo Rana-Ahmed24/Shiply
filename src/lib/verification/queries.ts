@@ -1,7 +1,9 @@
 import "server-only";
 
 import { unstable_noStore as noStore } from "next/cache";
+import { cache } from "react";
 
+import { hasRole, type UserRole } from "@/lib/auth/roles";
 import {
   checkTravelerVerificationIntegrity,
   filterVerifiedTravelerIds,
@@ -10,8 +12,6 @@ import {
   applyIntegrityToVerificationView,
   mapVerificationRow,
 } from "@/lib/verification/mappers";
-import { hasRole, type UserRole } from "@/lib/auth/roles";
-import { getUser, getProfile } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -28,48 +28,48 @@ function isMissingTableError(message: string): boolean {
   );
 }
 
-export async function getTravelerVerification(
-  userId: string
-): Promise<TravelerVerificationView> {
-  noStore();
+export const getTravelerVerification = cache(
+  async (userId: string): Promise<TravelerVerificationView> => {
+    noStore();
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("traveler_verifications")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error && !isMissingTableError(error.message)) {
-    console.error("[verification] getTravelerVerification:", error.message);
-  }
-
-  const row = (data as TravelerVerificationRow | null) ?? null;
-
-  let effectiveRow = row;
-  let integrity = await checkTravelerVerificationIntegrity(userId, {
-    repair: true,
-    row: effectiveRow,
-    log: true,
-  });
-
-  if (integrity.repaired) {
-    const { data: refreshed } = await supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from("traveler_verifications")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
-    effectiveRow = (refreshed as TravelerVerificationRow | null) ?? row;
-    integrity = await checkTravelerVerificationIntegrity(userId, {
-      repair: false,
+
+    if (error && !isMissingTableError(error.message)) {
+      console.error("[verification] getTravelerVerification:", error.message);
+    }
+
+    const row = (data as TravelerVerificationRow | null) ?? null;
+
+    let effectiveRow = row;
+    let integrity = await checkTravelerVerificationIntegrity(userId, {
+      repair: true,
       row: effectiveRow,
       log: false,
     });
-  }
 
-  const view = mapVerificationRow(effectiveRow, userId);
-  return applyIntegrityToVerificationView(view, integrity);
-}
+    if (integrity.repaired) {
+      const { data: refreshed } = await supabase
+        .from("traveler_verifications")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      effectiveRow = (refreshed as TravelerVerificationRow | null) ?? row;
+      integrity = await checkTravelerVerificationIntegrity(userId, {
+        repair: false,
+        row: effectiveRow,
+        log: false,
+      });
+    }
+
+    const view = mapVerificationRow(effectiveRow, userId);
+    return applyIntegrityToVerificationView(view, integrity);
+  }
+);
 
 export async function countUserListings(userId: string): Promise<number> {
   const supabase = await createClient();
@@ -139,10 +139,18 @@ export async function fetchVerificationStatusMap(
 }
 
 async function getAdminQueueClient() {
-  const user = await getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const profile = await getProfile(user.id);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("roles")
+    .eq("id", user.id)
+    .maybeSingle();
+
   if (!hasRole(profile?.roles as UserRole[] | undefined, "admin")) {
     return null;
   }
@@ -150,7 +158,7 @@ async function getAdminQueueClient() {
   try {
     return createAdminClient();
   } catch {
-    return await createClient();
+    return supabase;
   }
 }
 

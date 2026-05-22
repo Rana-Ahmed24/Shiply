@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import {
   fieldErrorsFromZod,
   mapAuthError,
@@ -16,6 +14,7 @@ import {
   VERIFICATION_MAX_BYTES,
 } from "@/lib/verification/constants";
 import { getTravelerVerification } from "@/lib/verification/queries";
+import { revalidateVerificationSurfaces } from "@/lib/verification/revalidate";
 import {
   userOwnsVerificationFolder,
   verificationFolderFromPath,
@@ -177,8 +176,7 @@ export async function uploadVerificationDocAction(
     return { error: mapAuthError(updateError.message) };
   }
 
-  revalidatePath("/verify-traveler");
-  revalidatePath("/profile");
+  revalidateVerificationSurfaces();
   return { success: "Document uploaded." };
 }
 
@@ -239,10 +237,7 @@ export async function resetTravelerVerificationAction(): Promise<AuthActionState
     };
   }
 
-  revalidatePath("/verify-traveler");
-  revalidatePath("/profile");
-  revalidatePath("/admin/verifications");
-  revalidatePath("/");
+  revalidateVerificationSurfaces();
 
   return {
     success: "Verification cleared. Upload passport, selfie, and ticket again.",
@@ -304,10 +299,7 @@ export async function beginVerificationEditAction(): Promise<AuthActionState> {
     }
   }
 
-  revalidatePath("/verify-traveler");
-  revalidatePath("/profile");
-  revalidatePath("/admin/verifications");
-  revalidatePath("/");
+  revalidateVerificationSurfaces();
 
   return {
     success:
@@ -352,10 +344,7 @@ export async function submitTravelerVerificationAction(
     return { error: mapAuthError(error.message) };
   }
 
-  revalidatePath("/verify-traveler");
-  revalidatePath("/profile");
-  revalidatePath("/admin/verifications");
-  revalidatePath("/");
+  revalidateVerificationSurfaces();
 
   return { success: "Verification submitted for review." };
 }
@@ -411,8 +400,7 @@ export async function approveVerificationAction(
     return { error: mapAuthError(error.message) };
   }
 
-  revalidatePath("/admin/verifications");
-  revalidatePath("/");
+  revalidateVerificationSurfaces();
   return { success: "Traveler verified." };
 }
 
@@ -447,7 +435,7 @@ export async function rejectVerificationAction(
     return { error: mapAuthError(error.message) };
   }
 
-  revalidatePath("/admin/verifications");
+  revalidateVerificationSurfaces();
   return { success: "Verification rejected." };
 }
 

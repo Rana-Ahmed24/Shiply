@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { Container } from "@/components/layout/container";
 import { ListingForm } from "@/components/listings/listing-form";
 import { FirstListingVerifyGate } from "@/components/verification/first-listing-verify-gate";
+import { PromptVerifyCleanup } from "@/components/verification/prompt-verify-cleanup";
 import { VerificationStatusBanner } from "@/components/verification/verification-status-banner";
 import { buttonVariants } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth/server";
@@ -15,6 +17,8 @@ import { cn } from "@/lib/utils";
 type NewListingPageProps = {
   searchParams: Promise<{ promptVerify?: string }>;
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function NewListingPage({ searchParams }: NewListingPageProps) {
   const params = await searchParams;
@@ -32,6 +36,9 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
 
   return (
     <Container className="max-w-3xl space-y-8 py-10 md:py-14">
+      <Suspense fallback={null}>
+        <PromptVerifyCleanup verificationStatus={verification.status} />
+      </Suspense>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-display text-3xl">Create listing</h1>

@@ -42,7 +42,8 @@ export function VerificationWizardFooter({
   });
 
   useEffect(() => {
-    if (state.success) router.refresh();
+    if (!state.success) return;
+    router.refresh();
   }, [state.success, router]);
 
   return (

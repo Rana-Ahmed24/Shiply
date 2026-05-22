@@ -47,20 +47,18 @@ export function VerificationDocUpload({
   disabled,
   onUploadSuccess,
 }: VerificationDocUploadProps) {
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [state, formAction] = useActionState(uploadVerificationDocAction, {});
   useActionStateToast(state);
 
   useEffect(() => {
-    if (state.success) {
-      setSelectedFileName(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      onUploadSuccess?.();
-      router.refresh();
-    }
-  }, [state.success, router, onUploadSuccess]);
+    if (!state.success) return;
+    setSelectedFileName(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    onUploadSuccess?.();
+    // Server action revalidates /verify-traveler — avoid redundant refresh loops.
+  }, [state.success, onUploadSuccess]);
 
   const hasFileToUpload = Boolean(selectedFileName);
   const showStoredUploaded = uploaded && !selectedFileName;

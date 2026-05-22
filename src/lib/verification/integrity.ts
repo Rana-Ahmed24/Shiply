@@ -105,7 +105,7 @@ export async function checkTravelerVerificationIntegrity(
   noStore();
 
   const repair = options?.repair ?? true;
-  const shouldLog = options?.log ?? process.env.NODE_ENV !== "production";
+  const shouldLog = options?.log === true;
 
   const row = await fetchVerificationRow(userId, options?.row);
   const dbStatus: TravelerVerificationStatus = row?.status ?? "not_submitted";

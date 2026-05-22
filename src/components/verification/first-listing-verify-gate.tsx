@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Dialog,
@@ -31,24 +32,38 @@ export function FirstListingVerifyGate({
   forceOpen = false,
   children,
 }: FirstListingVerifyGateProps) {
+  const router = useRouter();
   const shouldOfferVerify =
     verificationStatus !== "verified" &&
     verificationStatus !== "pending" &&
     verificationStatus !== "invalid";
 
+  const effectiveForceOpen = forceOpen && shouldOfferVerify;
   const [open, setOpen] = useState(false);
+  const autoOpenedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!shouldOfferVerify) return;
-    if (listingCount > 0 && !forceOpen) return;
-    if (!forceOpen && sessionStorage.getItem(DISMISS_KEY) === "1") return;
+    if (listingCount > 0 && !effectiveForceOpen) return;
+    if (!effectiveForceOpen && sessionStorage.getItem(DISMISS_KEY) === "1") {
+      return;
+    }
+    if (autoOpenedRef.current) return;
+    autoOpenedRef.current = true;
     setOpen(true);
-  }, [listingCount, verificationStatus, shouldOfferVerify, forceOpen]);
+  }, [listingCount, verificationStatus, shouldOfferVerify, effectiveForceOpen]);
+
+  function stripPromptVerifyParam() {
+    if (typeof window === "undefined") return;
+    if (!window.location.search.includes("promptVerify=1")) return;
+    router.replace("/listings/new", { scroll: false });
+  }
 
   function continueWithout() {
     sessionStorage.setItem(DISMISS_KEY, "1");
     setOpen(false);
+    stripPromptVerifyParam();
   }
 
   return (

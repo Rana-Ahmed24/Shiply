@@ -56,8 +56,9 @@ export function TravelerVerificationWizard({
   });
 
   useEffect(() => {
-    if (submitState.success) router.refresh();
-  }, [submitState.success, router]);
+    if (!submitState.success) return;
+    router.replace(backHref, { scroll: false });
+  }, [submitState.success, router, backHref]);
 
   const locked =
     initial.status === "pending" || initial.status === "verified";
